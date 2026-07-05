@@ -1,0 +1,43 @@
+# AulaTalent ATS
+
+Maqueta funcional educativa de un ATS para clases de reclutamiento, filtro curricular, sesgos, trazabilidad e inteligencia artificial aplicada a seleccion.
+
+## Caso docente incluido
+
+**De 12 postulantes a una terna defendible**
+
+El caso trabaja una vacante de **Asistente de Atencion y Gestion Administrativa** en modalidad presencial en Valparaiso. Incluye 12 candidatos ficticios con distintos niveles de calce, alertas y tensiones pedagogicas:
+
+- score ATS alto con poca evidencia,
+- score ATS bajo con potencial,
+- requisito excluyente incumplido,
+- CV desordenado pero experiencia relevante,
+- candidatos para terna final.
+
+## Modulos
+
+- Dashboard.
+- Dashboard con 12 tareas tipo mision, progreso guardado y alerta de tarea completada.
+- Modo ejercicio con guia de 12 tareas.
+- Requisiciones y criterios del cargo.
+- Proceso de seleccion con Kanban.
+- Portal candidato con postulacion ficticia.
+- Base de candidatos y ficha individual.
+- Matriz de filtro curricular.
+- Entrevistas e invitaciones simuladas.
+- Scorecards de entrevista.
+- Comunicaciones simuladas.
+- Reporte ejecutivo y terna recomendada.
+- Configuracion, roles, privacidad y trazabilidad.
+
+## Uso
+
+Abrir `index.html` en el navegador o publicar la carpeta en GitHub Pages. No requiere backend ni instalacion.
+
+La app guarda los cambios en `localStorage` e incluye un boton **Reiniciar demo** para volver al caso original.
+
+Al reiniciar, las 12 tareas del ejercicio vuelven a quedar pendientes. Cuando el grupo realiza y guarda una accion clave, la plataforma marca la tarea como completada y muestra una alerta de avance.
+
+## Enfoque pedagogico
+
+El ATS ordena informacion y apoya decisiones, pero no reemplaza el juicio profesional. El ranking automatico debe compararse con evidencia humana, criterios definidos y trazabilidad de motivos.
