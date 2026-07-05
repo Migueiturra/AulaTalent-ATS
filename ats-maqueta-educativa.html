@@ -166,6 +166,7 @@
         <div class="actions">
           <button class="btn" id="portalBtn">Portal candidato</button>
           <button class="btn" id="resetBtn">Reiniciar demo</button>
+          <button class="btn" id="blankBtn">Modo desde cero</button>
           <button class="btn primary" id="reportBtn">Reporte ejecutivo</button>
         </div>
       </header>
@@ -296,6 +297,24 @@
     function cand(id,name,source,stage,score,exp,city,salary,tags,risks,summary,p1,p2,p3,p4,p5,matrix,humanDecision,humanReason){
       return { id,name,email:name.toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").replaceAll(" ",".")+"@demo.cl", phone:"+56 9 0000 0000", source, stage, score, exp, city, salary, tags, risks, summary, process:"p1", applied:"2026-07-05", cv:summary, answers:{ presencial:p1, exp:p2, reclamos:p3, sistema:p4, caso:p5 }, matrix, humanDecision, humanReason, notes:"", discardReason: risks.join(", "), consent:true };
     }
+    function blankExerciseData(){
+      const value = structuredClone(seed);
+      value.requisitions = [];
+      value.processes[0].title = "Proceso por configurar";
+      value.processes[0].status = "Levantamiento de perfil";
+      value.processes[0].description = "";
+      value.processes[0].functions = "";
+      value.processes[0].must = [];
+      value.processes[0].nice = [];
+      value.processes[0].competencies = [];
+      value.interviews = [];
+      value.scorecards = {};
+      value.communications = [];
+      value.taskStatus = emptyTaskStatus();
+      value.exerciseNotes = { criteria:"", bias:"", finalReflection:"" };
+      value.audit = [log("Modo desde cero iniciado", "Sistema")];
+      return value;
+    }
     function log(text, by){ return { text, by, at: new Date().toLocaleString("es-CL") }; }
     let data = load();
     let active = "dashboard";
@@ -309,12 +328,18 @@
     }
     function save(){ localStorage.setItem("aulaTalentATS", JSON.stringify(data)); }
     function resetDemo(){ localStorage.removeItem("aulaTalentATS"); data = structuredClone(seed); save(); render(); toast("Demo reiniciada con datos iniciales del proceso."); }
+    function resetBlank(){ localStorage.removeItem("aulaTalentATS"); data = blankExerciseData(); save(); render(); toast("Modo desde cero iniciado. Completa la requisicion y criterios antes de avanzar."); }
     function money(n){ return new Intl.NumberFormat("es-CL", {style:"currency", currency:"CLP", maximumFractionDigits:0}).format(n); }
     function role(){ return document.getElementById("role").value; }
     function canEdit(){ return !["Candidato","Observador docente"].includes(role()); }
     function getCandidate(id){ return data.candidates.find(c => c.id === id); }
     function getProcess(){ return data.processes.find(p => p.id === data.activeProcess); }
     function escapeHtml(v){ return String(v ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[m])); }
+    function requiredValues(ids, label){
+      const missing = ids.filter(id => !String(val(id) ?? "").trim());
+      if (missing.length) { toast(`Falta completar: ${label || missing[0]}`); return false; }
+      return true;
+    }
     function completeTask(id){
       const task = taskDefinitions.find(t => t.id === id);
       if (!task || data.taskStatus[id]?.done) return false;
@@ -430,7 +455,7 @@
           <div class="card pad">
             <h2>Requisiciones</h2>
             <table><thead><tr><th>Cargo</th><th>Area</th><th>Ubicacion</th><th>Urgencia</th><th>Estado</th></tr></thead>
-              <tbody>${data.requisitions.map(r=>`<tr><td><b>${escapeHtml(r.title)}</b><br><span class="small">${escapeHtml(r.reason)}</span></td><td>${escapeHtml(r.area)}</td><td>${escapeHtml(r.city)}<br><span class="small">${escapeHtml(r.mode)}</span></td><td>${escapeHtml(r.urgency)}</td><td>${pill(r.status, r.status==="Aprobada"?"green":r.status==="Pendiente"?"amber":"red")}</td></tr>`).join("")}</tbody></table>
+              <tbody>${data.requisitions.length ? data.requisitions.map(r=>`<tr><td><b>${escapeHtml(r.title)}</b><br><span class="small">${escapeHtml(r.reason)}</span></td><td>${escapeHtml(r.area)}</td><td>${escapeHtml(r.city)}<br><span class="small">${escapeHtml(r.mode)}</span></td><td>${escapeHtml(r.urgency)}</td><td>${pill(r.status, r.status==="Aprobada"?"green":r.status==="Pendiente"?"amber":"red")}</td></tr>`).join("") : `<tr><td colspan="5"><span class="small">No hay requisiciones registradas. Crea una para iniciar el proceso.</span></td></tr>`}</tbody></table>
           </div>
           <div class="card pad">
             <h2>Criterios del proceso activo</h2>
@@ -448,10 +473,12 @@
     function pill(text,cls=""){ return `<span class="pill ${cls}">${escapeHtml(text)}</span>`; }
     function linesFrom(id){ return val(id).split(/\n+/).map(x=>x.trim()).filter(Boolean); }
     function saveCriteria(){
+      if (!requiredValues(["mustCriteria","niceCriteria","competencyCriteria"], "requisitos excluyentes, deseables y competencias")) return;
       const p = getProcess();
       p.must = linesFrom("mustCriteria");
       p.nice = linesFrom("niceCriteria");
       p.competencies = linesFrom("competencyCriteria");
+      if (!p.must.length || !p.nice.length || !p.competencies.length) { toast("Cada bloque de criterios debe tener al menos un elemento."); return; }
       data.exerciseNotes.criteria = `Excluyentes: ${p.must.join("; ")}. Deseables: ${p.nice.join("; ")}. Competencias: ${p.competencies.join("; ")}.`;
       completeTask("t2");
       data.audit.unshift(log("Criterios del proceso actualizados", role()));
@@ -459,24 +486,31 @@
     }
     function openReqForm(){
       openModal("Nueva requisicion", `<div class="form two-col">
-        <label><span>Cargo</span><input id="reqTitle" value="Asistente de Atencion y Gestion Administrativa"></label>
-        <label><span>Area solicitante</span><input id="reqArea" value="Atencion de Usuarios"></label>
-        <label><span>Jefatura solicitante</span><input id="reqManager" value="Coordinacion de Atencion de Usuarios"></label>
-        <label><span>Motivo de vacante</span><input id="reqReason" value="Refuerzo operativo"></label>
-        <label><span>Vacantes</span><input id="reqVacancies" type="number" value="1"></label>
+        <label><span>Cargo</span><input id="reqTitle" placeholder="Ej.: Asistente de Atencion y Gestion Administrativa"></label>
+        <label><span>Area solicitante</span><input id="reqArea" placeholder="Ej.: Atencion de Usuarios"></label>
+        <label><span>Jefatura solicitante</span><input id="reqManager" placeholder="Nombre o rol solicitante"></label>
+        <label><span>Motivo de vacante</span><input id="reqReason" placeholder="Reemplazo, aumento de dotacion, proyecto..."></label>
+        <label><span>Vacantes</span><input id="reqVacancies" type="number" min="1" placeholder="1"></label>
         <label><span>Modalidad</span><select id="reqMode"><option>Presencial</option><option>Hibrida</option><option>Remota</option></select></label>
-        <label><span>Ubicacion</span><input id="reqCity" value="Valparaiso"></label>
-        <label><span>Jornada</span><input id="reqSchedule" value="Jornada completa"></label>
-        <label><span>Contrato</span><input id="reqContract" value="Plazo fijo inicial"></label>
-        <label><span>Renta referencial</span><input id="reqSalary" value="$780.000 - $950.000 liquido"></label>
-        <label><span>Ingreso esperado</span><input id="reqStart" type="date" value="2026-08-01"></label>
+        <label><span>Ubicacion</span><input id="reqCity" placeholder="Ciudad o region"></label>
+        <label><span>Jornada</span><input id="reqSchedule" placeholder="Completa, parcial, turnos..."></label>
+        <label><span>Contrato</span><input id="reqContract" placeholder="Indefinido, plazo fijo, reemplazo..."></label>
+        <label><span>Renta referencial</span><input id="reqSalary" placeholder="Rango o por definir"></label>
+        <label><span>Ingreso esperado</span><input id="reqStart" type="date"></label>
         <label><span>Urgencia</span><select id="reqUrgency"><option>Alta</option><option>Media</option><option>Baja</option></select></label>
         <label><span>Estado</span><select id="reqStatus"><option>Aprobada</option><option>Pendiente</option><option>Rechazada</option></select></label>
         <button class="btn primary" onclick="saveRequisition()">Guardar requisicion</button>
       </div>`);
     }
     function saveRequisition(){
-      data.requisitions.unshift({ id:"r"+Date.now(), title:val("reqTitle"), area:val("reqArea"), manager:val("reqManager"), reason:val("reqReason"), vacancies:Number(val("reqVacancies")), mode:val("reqMode"), city:val("reqCity"), schedule:val("reqSchedule"), contract:val("reqContract"), salary:val("reqSalary"), startDate:val("reqStart"), urgency:val("reqUrgency"), status:val("reqStatus") });
+      if (!requiredValues(["reqTitle","reqArea","reqManager","reqReason","reqVacancies","reqCity","reqSchedule","reqContract","reqSalary","reqStart"], "todos los campos de la requisicion")) return;
+      const item = { id:"r"+Date.now(), title:val("reqTitle"), area:val("reqArea"), manager:val("reqManager"), reason:val("reqReason"), vacancies:Number(val("reqVacancies")), mode:val("reqMode"), city:val("reqCity"), schedule:val("reqSchedule"), contract:val("reqContract"), salary:val("reqSalary"), startDate:val("reqStart"), urgency:val("reqUrgency"), status:val("reqStatus") };
+      data.requisitions.unshift(item);
+      if (!getProcess().description) {
+        const p = getProcess();
+        p.title = item.title;
+        p.description = `Proceso asociado a ${item.area}, modalidad ${item.mode}, ubicacion ${item.city}.`;
+      }
       completeTask("t1");
       data.audit.unshift(log(`Requisicion creada: ${val("reqTitle")}`, role()));
       save(); closeModal(); render(); toast("Requisicion guardada.");
@@ -613,6 +647,7 @@
         </div>`;
     }
     function scheduleInterview(){
+      if (!requiredValues(["intCand","intDate","intTime","intMode","intBy","intNotes"], "datos de entrevista y observaciones")) return;
       const id = "i"+Date.now(), cid = document.getElementById("intCand").value, c = getCandidate(cid), p = getProcess();
       const item = { id, candidate: cid, date: val("intDate"), time: val("intTime"), mode: val("intMode"), interviewer: val("intBy"), notes: val("intNotes"), message: fillTemplate(templates.interview, c, {fecha:val("intDate"), hora:val("intTime"), modalidad:val("intMode"), entrevistador:val("intBy")}) };
       data.interviews.unshift(item); c.stage = "Entrevista agendada"; completeTask("t7"); data.audit.unshift(log(`Entrevista agendada para ${c.name}`, role())); save(); render(); toast("Entrevista agendada y etapa actualizada.");
@@ -643,6 +678,7 @@
     function saveScorecard(id){
       const keys = ["comunicacion","experiencia","motivacion","dificil","orden","condiciones"];
       const sc = {}; keys.forEach(k => sc[k] = Number(val("sc_"+k)));
+      if (!requiredValues(["sc_comment","sc_validate"], "comentario del entrevistador y punto a validar")) return;
       sc.comment = val("sc_comment"); sc.recommendation = val("sc_recommendation"); sc.date = val("sc_date"); sc.validate = val("sc_validate");
       data.scorecards[id] = sc; getCandidate(id).stage = sc.recommendation === "Avanzar" ? "Finalista" : getCandidate(id).stage;
       completeTask("t8");
@@ -656,20 +692,49 @@
         <div class="grid two">
           <div class="card pad"><h2>Generar comunicacion simulada</h2>
             <div class="form">
-              <label><span>Candidato</span><select id="msgCand">${data.candidates.map(c=>`<option value="${c.id}">${c.name}</option>`).join("")}</select></label>
-              <label><span>Plantilla</span><select id="msgType"><option value="received">Confirmacion de postulacion</option><option value="interview">Invitacion a entrevista</option><option value="reject">Mensaje de descarte</option><option value="advance">Avance a siguiente etapa</option><option value="offer">Oferta</option></select></label>
-              <button class="btn primary" onclick="generateMessage()">Generar mensaje</button>
-            </div><div id="msgOutput" style="margin-top:12px"></div>
+              <label><span>Tipo de comunicacion</span><select id="msgType" onchange="renderMessageTargets()"><option value="reject">Mensaje de descarte</option><option value="received">Confirmacion de postulacion</option><option value="interview">Invitacion a entrevista</option><option value="advance">Avance a siguiente etapa</option><option value="offer">Oferta</option></select></label>
+              <div id="msgTargets"></div>
+              <label><span>Mensaje a registrar</span><textarea id="msgBody" style="min-height:230px" placeholder="Redacta el mensaje que recibira el candidato. Debe ser claro, respetuoso y consistente con su etapa."></textarea></label>
+              <div class="actions"><button class="btn" onclick="loadSuggestedTemplate()">Usar plantilla sugerida</button><button class="btn primary" onclick="saveMessage()">Registrar en historial</button></div>
+            </div>
           </div>
           <div class="card pad"><h2>Mensajes registrados</h2><div class="timeline">${data.communications.map(m=>`<div class="event"><b>${m.title}</b><span>${m.to} · ${m.at}</span><p>${escapeHtml(m.body).slice(0,170)}...</p></div>`).join("") || "<p class='small'>Aun no hay mensajes generados.</p>"}</div></div>
         </div>`;
+      renderMessageTargets();
     }
     function fillTemplate(t,c,extra={}){ return t.replaceAll("[Nombre]", c.name).replaceAll("[Cargo]", getProcess().title).replaceAll("[fecha]", extra.fecha || "por definir").replaceAll("[hora]", extra.hora || "por definir").replaceAll("[modalidad]", extra.modalidad || "por definir").replaceAll("[entrevistador]", extra.entrevistador || "Equipo de seleccion"); }
-    function generateMessage(){
-      const c = getCandidate(val("msgCand")), type = val("msgType"), body = fillTemplate(templates[type], c);
-      document.getElementById("msgOutput").innerHTML = `<textarea id="msgBody" style="min-height:230px">${escapeHtml(body)}</textarea><div class="actions" style="margin-top:10px"><button class="btn primary" onclick="saveMessage('${c.id}','${type}')">Registrar en historial</button></div>`;
+    function renderMessageTargets(){
+      const type = val("msgType");
+      const target = document.getElementById("msgTargets");
+      if (!target) return;
+      if (type === "reject") {
+        const discarded = data.candidates.filter(c => c.stage === "Descartado");
+        target.innerHTML = `<label><span>Candidatos descartados</span><div class="card pad" style="box-shadow:none">${discarded.length ? discarded.map(c=>`<label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" class="msgCandidate" value="${c.id}" style="width:auto;min-height:auto"> ${escapeHtml(c.name)} <span class="small">${escapeHtml(c.discardReason || "sin motivo registrado")}</span></label>`).join("") : `<span class="small">No hay candidatos en etapa Descartado. Mueve candidatos a Descartado antes de registrar un cierre.</span>`}</div></label>`;
+      } else {
+        target.innerHTML = `<label><span>Candidato</span><select id="msgCand">${data.candidates.map(c=>`<option value="${c.id}">${escapeHtml(c.name)} - ${escapeHtml(c.stage)}</option>`).join("")}</select></label>`;
+      }
     }
-    function saveMessage(cid,type){ const c = getCandidate(cid), body = val("msgBody"); data.communications.unshift({title:type,to:c.name,body,at:new Date().toLocaleString("es-CL")}); if (type === "reject") completeTask("t9"); data.audit.unshift(log(`Comunicacion registrada para ${c.name}`, role())); save(); renderCommunications(); toast("Mensaje registrado."); }
+    function selectedMessageCandidates(){
+      const type = val("msgType");
+      if (type === "reject") return [...document.querySelectorAll(".msgCandidate:checked")].map(x => getCandidate(x.value)).filter(Boolean);
+      const id = document.getElementById("msgCand")?.value;
+      return id ? [getCandidate(id)].filter(Boolean) : [];
+    }
+    function loadSuggestedTemplate(){
+      const selected = selectedMessageCandidates();
+      if (!selected.length) return toast("Selecciona al menos un destinatario antes de cargar una plantilla.");
+      document.getElementById("msgBody").value = fillTemplate(templates[val("msgType")], selected[0]);
+    }
+    function saveMessage(){
+      const type = val("msgType"), body = val("msgBody").trim(), selected = selectedMessageCandidates();
+      if (!selected.length) return toast(type === "reject" ? "Selecciona al menos un candidato descartado." : "Selecciona un candidato.");
+      if (type === "reject" && selected.some(c => c.stage !== "Descartado")) return toast("El mensaje de descarte solo puede registrarse para candidatos en etapa Descartado.");
+      if (body.length < 80) return toast("Redacta un mensaje mas completo antes de registrarlo.");
+      data.communications.unshift({title:type,to:selected.map(c=>c.name).join(", "),body,at:new Date().toLocaleString("es-CL")});
+      if (type === "reject") completeTask("t9");
+      data.audit.unshift(log(`Comunicacion registrada para ${selected.map(c=>c.name).join(", ")}`, role()));
+      save(); renderCommunications(); toast("Mensaje registrado.");
+    }
 
     function renderReports(){
       const finalists = shortlist();
@@ -750,23 +815,27 @@ Coordinar entrevistas finales con jefatura, completar pauta de evaluacion y regi
       openModal("Portal candidato", `<div class="grid two">
         <div class="card pad"><h2>${p.title}</h2><p>${p.description}</p><div class="hint">Formulario simulado para crear una postulacion asociada al proceso activo.</div></div>
         <div class="card pad"><h2>Formulario</h2><div class="form">
-          <label><span>Nombre ficticio</span><input id="newName" value="Postulante Demo"></label>
-          <label><span>Correo ficticio</span><input id="newEmail" value="postulante.demo@demo.cl"></label>
-          <label><span>Telefono ficticio</span><input id="newPhone" value="+56 9 1111 2222"></label>
+          <label><span>Nombre ficticio</span><input id="newName" placeholder="Nombre y apellido"></label>
+          <label><span>Correo ficticio</span><input id="newEmail" placeholder="correo@demo.cl"></label>
+          <label><span>Telefono ficticio</span><input id="newPhone" placeholder="+56 9 ...."></label>
           <label><span>Fuente</span><select id="newSource">${p.sources.map(s=>`<option>${s}</option>`).join("")}</select></label>
-          <label><span>Ciudad</span><input id="newCity" value="Valparaiso"></label>
-          <label><span>Anos experiencia</span><input id="newExp" type="number" value="2"></label>
-          <label><span>Pretension renta liquida</span><input id="newSalary" type="number" value="820000"></label>
+          <label><span>Ciudad</span><input id="newCity" placeholder="Ciudad de residencia"></label>
+          <label><span>Anos experiencia</span><input id="newExp" type="number" min="0" step="0.5" placeholder="0"></label>
+          <label><span>Pretension renta liquida</span><input id="newSalary" type="number" min="0" placeholder="Monto en CLP"></label>
           <label><span>Disponibilidad presencial Valparaiso</span><select id="newPres"><option>Si</option><option>No</option></select></label>
-          <label><span>Resumen curricular / CV simulado</span><textarea id="newCv">Experiencia en atencion de usuarios, registro de casos y apoyo administrativo.</textarea></label>
+          <label><span>Gestion de reclamos o casos dificiles</span><textarea id="newClaims" placeholder="Describe evidencia concreta."></textarea></label>
+          <label><span>CRM, ERP o sistema de registro usado</span><input id="newSystem" placeholder="Nombre del sistema o 'sin experiencia'"></label>
+          <label><span>Experiencia atendiendo a un usuario dificil</span><textarea id="newCase" placeholder="Describe situacion, accion y resultado."></textarea></label>
+          <label><span>Resumen curricular / CV simulado</span><textarea id="newCv" placeholder="Trayectoria, funciones, herramientas y logros relevantes."></textarea></label>
           <label><input id="newConsent" type="checkbox" checked> Acepto consentimiento ficticio de tratamiento de datos.</label>
           <button class="btn primary" onclick="submitApplication()">Enviar postulacion ficticia</button>
         </div></div></div>`);
     }
     function submitApplication(){
       if (!document.getElementById("newConsent").checked) return toast("El consentimiento ficticio es obligatorio para la demo.");
+      if (!requiredValues(["newName","newEmail","newPhone","newCity","newExp","newSalary","newClaims","newSystem","newCase","newCv"], "todos los campos de postulacion")) return;
       const id = "c"+Date.now(), exp = Number(val("newExp")), pres = val("newPres")==="Si", score = Math.max(25, Math.min(94, 45 + exp*8 + (pres?12:-18)));
-      const c = { id, name:val("newName"), email:val("newEmail"), phone:val("newPhone"), source:val("newSource"), stage:pres?"Nuevo":"Descartado", score, exp, city:val("newCity"), salary:Number(val("newSalary")), tags:["creado en clase"], risks:pres?[]:["no cumple presencialidad"], summary:val("newCv"), process:"p1", applied:new Date().toISOString().slice(0,10), cv:val("newCv"), answers:{presencial:val("newPres"),exp:String(exp),reclamos:"No informado",sistema:"No informado",caso:"No informado"}, matrix:{presencial:pres?1:0,expMin:exp>=1?1:0,atencion:2,reclamos:0,crm:0,excel:1,claridad:1,renta:2}, humanDecision:pres?"Revisar":"Descartar", humanReason:pres?"Postulacion creada en clase; revisar evidencia.":"No cumple presencialidad.", notes:"", discardReason:pres?"":"No cumple requisito excluyente", consent:true };
+      const c = { id, name:val("newName"), email:val("newEmail"), phone:val("newPhone"), source:val("newSource"), stage:pres?"Nuevo":"Descartado", score, exp, city:val("newCity"), salary:Number(val("newSalary")), tags:["creado en clase"], risks:pres?[]:["no cumple presencialidad"], summary:val("newCv"), process:"p1", applied:new Date().toISOString().slice(0,10), cv:val("newCv"), answers:{presencial:val("newPres"),exp:String(exp),reclamos:val("newClaims"),sistema:val("newSystem"),caso:val("newCase")}, matrix:{presencial:pres?1:0,expMin:exp>=1?1:0,atencion:2,reclamos:val("newClaims").length>25?1:0,crm:val("newSystem").toLowerCase().includes("sin experiencia")?0:1,excel:0,claridad:val("newCv").length>80?2:1,renta:2}, humanDecision:pres?"Revisar":"Descartar", humanReason:pres?"Postulacion creada en el portal; revisar evidencia curricular y respuestas.":"No cumple presencialidad.", notes:"", discardReason:pres?"":"No cumple requisito excluyente", consent:true };
       data.candidates.unshift(c); completeTask("t3"); data.audit.unshift(log(`Postulacion ficticia creada: ${c.name}`, "Portal candidato")); save(); closeModal(); render(); toast("Postulacion ficticia creada.");
     }
 
@@ -777,6 +846,7 @@ Coordinar entrevistas finales con jefatura, completar pauta de evaluacion y regi
 
     document.getElementById("portalBtn").addEventListener("click", openPortal);
     document.getElementById("resetBtn").addEventListener("click", resetDemo);
+    document.getElementById("blankBtn").addEventListener("click", resetBlank);
     document.getElementById("reportBtn").addEventListener("click", () => setView("reports"));
     document.getElementById("role").addEventListener("change", render);
     document.getElementById("modalWrap").addEventListener("click", e => { if (e.target.id === "modalWrap") closeModal(); });

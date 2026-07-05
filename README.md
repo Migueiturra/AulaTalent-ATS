@@ -21,6 +21,7 @@ El caso trabaja una vacante de **Asistente de Atencion y Gestion Administrativa*
 - Plan de trabajo del proceso.
 - Requisiciones y criterios del cargo.
 - Creacion de nuevas requisiciones ficticias.
+- Modo desde cero para que estudiantes completen requisicion, criterios, postulaciones, entrevistas y comunicaciones sin textos prellenados.
 - Proceso de seleccion con Kanban.
 - Portal candidato con postulacion ficticia.
 - Base de candidatos y ficha individual.
@@ -38,6 +39,8 @@ Abrir `index.html` en el navegador o publicar la carpeta en GitHub Pages. No req
 La app guarda los cambios en `localStorage` e incluye un boton **Reiniciar demo** para volver al caso original.
 
 Al reiniciar, las 12 actividades vuelven a quedar pendientes. Cuando el usuario realiza y guarda una accion clave, la plataforma marca el hito como completado y muestra una alerta de avance.
+
+El boton **Modo desde cero** deja vacios los campos que debe construir el estudiante. Los formularios validan que no se guarden hitos sin datos suficientes, por ejemplo requisicion incompleta, criterios vacios, postulacion sin respuestas o mensaje de descarte sin candidato descartado.
 
 ## Enfoque pedagogico
 
