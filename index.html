@@ -450,22 +450,19 @@
       document.getElementById("requisitions").innerHTML = `
         <div class="toolbar filters" style="margin-bottom:14px">
           <button class="btn primary" onclick="openReqForm()">Nueva requisicion</button>
-          <button class="btn" onclick="completeTaskAndRender('t1')">Guardar revision de requisicion</button>
         </div>
         <div class="grid two">
           <div class="card pad">
             <h2>Requisiciones</h2>
-            <table><thead><tr><th>Cargo</th><th>Area</th><th>Ubicacion</th><th>Urgencia</th><th>Estado</th></tr></thead>
-              <tbody>${data.requisitions.length ? data.requisitions.map(r=>`<tr><td><b>${escapeHtml(r.title)}</b><br><span class="small">${escapeHtml(r.reason)}</span></td><td>${escapeHtml(r.area)}</td><td>${escapeHtml(r.city)}<br><span class="small">${escapeHtml(r.mode)}</span></td><td>${escapeHtml(r.urgency)}</td><td>${pill(r.status, r.status==="Aprobada"?"green":r.status==="Pendiente"?"amber":"red")}</td></tr>`).join("") : `<tr><td colspan="5"><span class="small">No hay requisiciones registradas. Crea una para iniciar el proceso.</span></td></tr>`}</tbody></table>
+            <table><thead><tr><th>Cargo</th><th>Area</th><th>Ubicacion</th><th>Urgencia</th><th>Estado</th><th></th></tr></thead>
+              <tbody>${data.requisitions.length ? data.requisitions.map(r=>`<tr><td><b>${escapeHtml(r.title)}</b><br><span class="small">${escapeHtml(r.reason)}</span></td><td>${escapeHtml(r.area)}</td><td>${escapeHtml(r.city)}<br><span class="small">${escapeHtml(r.mode)}</span></td><td>${escapeHtml(r.urgency)}</td><td>${pill(r.status, r.status==="Aprobada"?"green":r.status==="Pendiente"?"amber":"red")}</td><td><button class="btn small" onclick="openReqForm('${r.id}')">Editar</button></td></tr>`).join("") : `<tr><td colspan="6"><span class="small">No hay requisiciones registradas. Crea una para iniciar el proceso.</span></td></tr>`}</tbody></table>
           </div>
           <div class="card pad">
             <h2>Criterios del proceso activo</h2>
-            <div class="form">
-              <label><span>Requisitos excluyentes</span><textarea id="mustCriteria">${escapeHtml(p.must.join("\n"))}</textarea></label>
-              <label><span>Requisitos deseables</span><textarea id="niceCriteria">${escapeHtml(p.nice.join("\n"))}</textarea></label>
-              <label><span>Competencias a evaluar</span><textarea id="competencyCriteria">${escapeHtml(p.competencies.join("\n"))}</textarea></label>
-              <button class="btn primary" onclick="saveCriteria()">Guardar criterios</button>
-            </div>
+            ${listBlock("Requisitos excluyentes", p.must, "red")}
+            ${listBlock("Requisitos deseables", p.nice, "amber")}
+            ${listBlock("Competencias a evaluar", p.competencies, "cyan")}
+            <div class="hint" style="margin-top:12px">Edita la requisicion activa para actualizar estos criterios junto con los datos del cargo.</div>
           </div>
         </div>`;
     }
@@ -485,36 +482,54 @@
       data.audit.unshift(log("Criterios del proceso actualizados", role()));
       save(); render(); toast("Criterios guardados.");
     }
-    function openReqForm(){
-      openModal("Nueva requisicion", `<div class="form two-col">
-        <label><span>Cargo</span><input id="reqTitle" placeholder="Ej.: Asistente de Atencion y Gestion Administrativa"></label>
-        <label><span>Area solicitante</span><input id="reqArea" placeholder="Ej.: Atencion de Usuarios"></label>
-        <label><span>Jefatura solicitante</span><input id="reqManager" placeholder="Nombre o rol solicitante"></label>
-        <label><span>Motivo de vacante</span><input id="reqReason" placeholder="Reemplazo, aumento de dotacion, proyecto..."></label>
-        <label><span>Vacantes</span><input id="reqVacancies" type="number" min="1" placeholder="1"></label>
-        <label><span>Modalidad</span><select id="reqMode"><option>Presencial</option><option>Hibrida</option><option>Remota</option></select></label>
-        <label><span>Ubicacion</span><input id="reqCity" placeholder="Ciudad o region"></label>
-        <label><span>Jornada</span><input id="reqSchedule" placeholder="Completa, parcial, turnos..."></label>
-        <label><span>Contrato</span><input id="reqContract" placeholder="Indefinido, plazo fijo, reemplazo..."></label>
-        <label><span>Renta referencial</span><input id="reqSalary" placeholder="Rango o por definir"></label>
-        <label><span>Ingreso esperado</span><input id="reqStart" type="date"></label>
-        <label><span>Urgencia</span><select id="reqUrgency"><option>Alta</option><option>Media</option><option>Baja</option></select></label>
-        <label><span>Estado</span><select id="reqStatus"><option>Aprobada</option><option>Pendiente</option><option>Rechazada</option></select></label>
-        <button class="btn primary" onclick="saveRequisition()">Guardar requisicion</button>
+    function openReqForm(id=""){
+      const p = getProcess();
+      const r = id ? data.requisitions.find(item => item.id === id) : null;
+      openModal(r ? "Editar requisicion" : "Nueva requisicion", `<div class="form two-col">
+        <label><span>Cargo</span><input id="reqTitle" value="${escapeHtml(r?.title || "")}" placeholder="Ej.: Asistente de Atencion y Gestion Administrativa"></label>
+        <label><span>Area solicitante</span><input id="reqArea" value="${escapeHtml(r?.area || "")}" placeholder="Ej.: Atencion de Usuarios"></label>
+        <label><span>Jefatura solicitante</span><input id="reqManager" value="${escapeHtml(r?.manager || "")}" placeholder="Nombre o rol solicitante"></label>
+        <label><span>Motivo de vacante</span><input id="reqReason" value="${escapeHtml(r?.reason || "")}" placeholder="Reemplazo, aumento de dotacion, proyecto..."></label>
+        <label><span>Vacantes</span><input id="reqVacancies" type="number" min="1" value="${escapeHtml(r?.vacancies || "")}" placeholder="1"></label>
+        <label><span>Modalidad</span><select id="reqMode">${["Presencial","Hibrida","Remota"].map(x=>`<option ${x===(r?.mode || "Presencial")?"selected":""}>${x}</option>`).join("")}</select></label>
+        <label><span>Ubicacion</span><input id="reqCity" value="${escapeHtml(r?.city || "")}" placeholder="Ciudad o region"></label>
+        <label><span>Jornada</span><input id="reqSchedule" value="${escapeHtml(r?.schedule || "")}" placeholder="Completa, parcial, turnos..."></label>
+        <label><span>Contrato</span><input id="reqContract" value="${escapeHtml(r?.contract || "")}" placeholder="Indefinido, plazo fijo, reemplazo..."></label>
+        <label><span>Renta referencial</span><input id="reqSalary" value="${escapeHtml(r?.salary || "")}" placeholder="Rango o por definir"></label>
+        <label><span>Ingreso esperado</span><input id="reqStart" type="date" value="${escapeHtml(r?.startDate || "")}"></label>
+        <label><span>Urgencia</span><select id="reqUrgency">${["Alta","Media","Baja"].map(x=>`<option ${x===(r?.urgency || "Alta")?"selected":""}>${x}</option>`).join("")}</select></label>
+        <label><span>Estado</span><select id="reqStatus">${["Aprobada","Pendiente","Rechazada"].map(x=>`<option ${x===(r?.status || "Aprobada")?"selected":""}>${x}</option>`).join("")}</select></label>
+        <label style="grid-column:1/-1"><span>Descripcion del cargo</span><textarea id="reqDescription" placeholder="Objetivo general del cargo y contexto del proceso.">${escapeHtml(p.description || "")}</textarea></label>
+        <label style="grid-column:1/-1"><span>Funciones principales</span><textarea id="reqFunctions" placeholder="Una funcion por linea o parrafo.">${escapeHtml(p.functions || "")}</textarea></label>
+        <label style="grid-column:1/-1"><span>Requisitos excluyentes</span><textarea id="mustCriteria" placeholder="Un requisito por linea.">${escapeHtml(p.must.join("\n"))}</textarea></label>
+        <label style="grid-column:1/-1"><span>Requisitos deseables</span><textarea id="niceCriteria" placeholder="Un requisito por linea.">${escapeHtml(p.nice.join("\n"))}</textarea></label>
+        <label style="grid-column:1/-1"><span>Competencias a evaluar</span><textarea id="competencyCriteria" placeholder="Una competencia por linea.">${escapeHtml(p.competencies.join("\n"))}</textarea></label>
+        <button class="btn primary" onclick="saveRequisition('${id}')">Guardar requisicion y criterios</button>
       </div>`);
     }
-    function saveRequisition(){
-      if (!requiredValues(["reqTitle","reqArea","reqManager","reqReason","reqVacancies","reqCity","reqSchedule","reqContract","reqSalary","reqStart"], "todos los campos de la requisicion")) return;
+    function saveRequisition(id=""){
+      if (!requiredValues(["reqTitle","reqArea","reqManager","reqReason","reqVacancies","reqCity","reqSchedule","reqContract","reqSalary","reqStart","reqDescription","reqFunctions","mustCriteria","niceCriteria","competencyCriteria"], "todos los campos de la requisicion y criterios")) return;
       const item = { id:"r"+Date.now(), title:val("reqTitle"), area:val("reqArea"), manager:val("reqManager"), reason:val("reqReason"), vacancies:Number(val("reqVacancies")), mode:val("reqMode"), city:val("reqCity"), schedule:val("reqSchedule"), contract:val("reqContract"), salary:val("reqSalary"), startDate:val("reqStart"), urgency:val("reqUrgency"), status:val("reqStatus") };
-      data.requisitions.unshift(item);
-      if (!getProcess().description) {
-        const p = getProcess();
-        p.title = item.title;
-        p.description = `Proceso asociado a ${item.area}, modalidad ${item.mode}, ubicacion ${item.city}.`;
+      if (id) {
+        const index = data.requisitions.findIndex(r => r.id === id);
+        item.id = id;
+        if (index >= 0) data.requisitions[index] = item;
+      } else {
+        data.requisitions.unshift(item);
       }
+      const p = getProcess();
+      p.title = item.title;
+      p.description = val("reqDescription");
+      p.functions = val("reqFunctions");
+      p.must = linesFrom("mustCriteria");
+      p.nice = linesFrom("niceCriteria");
+      p.competencies = linesFrom("competencyCriteria");
+      if (!p.must.length || !p.nice.length || !p.competencies.length) { toast("Cada bloque de criterios debe tener al menos un elemento."); return; }
+      data.exerciseNotes.criteria = `Excluyentes: ${p.must.join("; ")}. Deseables: ${p.nice.join("; ")}. Competencias: ${p.competencies.join("; ")}.`;
       completeTask("t1");
-      data.audit.unshift(log(`Requisicion creada: ${val("reqTitle")}`, role()));
-      save(); closeModal(); render(); toast("Requisicion guardada.");
+      completeTask("t2");
+      data.audit.unshift(log(`${id ? "Requisicion editada" : "Requisicion creada"}: ${val("reqTitle")}`, role()));
+      save(); closeModal(); render(); toast("Requisicion y criterios guardados.");
     }
 
     function renderProcesses(){

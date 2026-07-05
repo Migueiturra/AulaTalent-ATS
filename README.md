@@ -21,6 +21,7 @@ El caso trabaja una vacante de **Asistente de Atencion y Gestion Administrativa*
 - Plan de trabajo del proceso.
 - Requisiciones y criterios del cargo.
 - Creacion de nuevas requisiciones ficticias.
+- Edicion de requisiciones existentes con datos del cargo y criterios del proceso activo en un mismo formulario.
 - Modo desde cero para que estudiantes completen requisicion, criterios, postulaciones, entrevistas y comunicaciones sin textos prellenados.
 - Proceso de seleccion con Kanban.
 - Portal candidato con postulacion ficticia.
