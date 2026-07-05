@@ -23,6 +23,8 @@ El caso trabaja una vacante de **Asistente de Atencion y Gestion Administrativa*
 - Creacion de nuevas requisiciones ficticias.
 - Edicion de requisiciones existentes con datos del cargo y criterios del proceso activo en un mismo formulario.
 - Modo desde cero para que estudiantes completen requisicion, criterios, postulaciones, entrevistas y comunicaciones sin textos prellenados.
+- Generacion de postulantes ficticios asociados al proceso activo, disponible despues de crear requisicion y criterios.
+- Selector de proceso en Pipeline y Candidatos para trabajar con mas de una requisicion/proceso.
 - Proceso de seleccion con Kanban.
 - Portal candidato con postulacion ficticia.
 - Base de candidatos y ficha individual.
@@ -41,7 +43,7 @@ La app guarda los cambios en `localStorage` e incluye un boton **Reiniciar demo*
 
 Al reiniciar, las 12 actividades vuelven a quedar pendientes. Cuando el usuario realiza y guarda una accion clave, la plataforma marca el hito como completado y muestra una alerta de avance.
 
-El boton **Modo desde cero** inicia un proceso limpio: sin requisicion, sin candidatos, sin entrevistas, sin scorecards y sin comunicaciones. El estudiante debe crear primero la requisicion; solo despues puede ingresar postulaciones asociadas al proceso. Los formularios validan que no se guarden hitos sin datos suficientes, por ejemplo requisicion incompleta, criterios vacios, postulacion sin respuestas o mensaje de descarte sin candidato descartado.
+El boton **Modo desde cero** inicia un proceso limpio: sin requisicion, sin candidatos, sin entrevistas, sin scorecards y sin comunicaciones. El estudiante debe crear primero la requisicion y sus criterios. Luego puede ingresar postulaciones manuales o usar **Generar postulantes ficticios** para poblar el proceso sin dedicar toda la clase a digitar candidatos.
 
 ## Enfoque pedagogico
 

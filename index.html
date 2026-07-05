@@ -335,6 +335,8 @@
     function canEdit(){ return !["Candidato","Observador docente"].includes(role()); }
     function getCandidate(id){ return data.candidates.find(c => c.id === id); }
     function getProcess(){ return data.processes.find(p => p.id === data.activeProcess); }
+    function processOptions(){ return data.processes.map(p => `<option value="${p.id}" ${p.id===data.activeProcess?"selected":""}>${escapeHtml(p.title)}</option>`).join(""); }
+    function setActiveProcess(id){ data.activeProcess = id; save(); render(); }
     function escapeHtml(v){ return String(v ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[m])); }
     function requiredValues(ids, label){
       const missing = ids.filter(id => !String(val(id) ?? "").trim());
@@ -374,7 +376,7 @@
     }
 
     function renderDashboard(){
-      const c = data.candidates, reviewed = c.filter(x => x.stage !== "Nuevo").length, pre = c.filter(x => ["Preseleccionado","Entrevista agendada","Entrevistado","Finalista","Oferta","Contratado"].includes(x.stage)).length;
+      const c = data.candidates.filter(x => x.process === data.activeProcess), reviewed = c.filter(x => x.stage !== "Nuevo").length, pre = c.filter(x => ["Preseleccionado","Entrevista agendada","Entrevistado","Finalista","Oferta","Contratado"].includes(x.stage)).length;
       document.getElementById("dashboard").innerHTML = `
         <div class="grid stats">
           ${metric("Postulantes", c.length, "Recibidos en el proceso")}
@@ -395,14 +397,18 @@
             <div class="actions" style="margin-top:12px"><button class="btn primary" onclick="setView('exercise')">Ver plan de trabajo</button></div>
           </div>
         </div>
-        <div class="grid three" style="margin-top:14px">
-          <div class="card pad"><h3>Revision requerida</h3><p>Andres Leiva tiene score alto por palabras clave, pero baja evidencia en respuestas.</p></div>
-          <div class="card pad"><h3>Perfil no tradicional</h3><p>Rocio Fuentes aparece con menor score, aunque muestra habilidades transferibles relevantes.</p></div>
-          <div class="card pad"><h3>Excluyente critico</h3><p>Javier Contreras no cumple disponibilidad presencial, pese a su buen perfil digital.</p></div>
+        <div class="card pad" style="margin-top:14px">
+          <h2>Acciones rapidas</h2>
+          <div class="actions">
+            <button class="btn" onclick="setView('requisitions')">Gestionar requisiciones</button>
+            <button class="btn" onclick="setView('processes')">Abrir pipeline</button>
+            <button class="btn" onclick="openPortal()">Ingresar postulacion</button>
+            <button class="btn primary" onclick="generateDemoCandidates()">Generar postulantes ficticios</button>
+          </div>
         </div>`;
     }
     function metric(label,value,sub){ return `<div class="card pad metric"><span>${label}</span><strong>${value}</strong><div class="small">${sub}</div></div>`; }
-    function stageCounts(){ return stages.map(s => ({label:s,value:data.candidates.filter(c=>c.stage===s).length})).filter(x=>x.value); }
+    function stageCounts(){ return stages.map(s => ({label:s,value:data.candidates.filter(c=>c.process===data.activeProcess && c.stage===s).length})).filter(x=>x.value); }
     function bars(items){ const max = Math.max(1,...items.map(i=>i.value)); return `<div class="bars">${items.map(i=>`<div class="bar-row"><span>${i.label}</span><div class="bar-track"><span style="width:${i.value/max*100}%"></span></div><b>${i.value}</b></div>`).join("")}</div>`; }
     function exerciseProgress(){
       const done = taskDefinitions.filter(t => data.taskStatus[t.id]?.done).length;
@@ -517,7 +523,12 @@
       } else {
         data.requisitions.unshift(item);
       }
-      const p = getProcess();
+      let p = data.processes.find(proc => proc.requisition === item.id);
+      if (!p) {
+        p = { id:"p"+Date.now(), requisition:item.id, title:item.title, status:"Levantamiento de perfil", responsible:"Equipo de seleccion", sources:["Portal corporativo","LinkedIn","Laborum","Computrabajo","Referido","Carga manual"], description:"", functions:"", must:[], nice:[], competencies:[], questions:getProcess().questions || [] };
+        data.processes.unshift(p);
+      }
+      data.activeProcess = p.id;
       p.title = item.title;
       p.description = val("reqDescription");
       p.functions = val("reqFunctions");
@@ -535,6 +546,10 @@
     function renderProcesses(){
       const p = getProcess();
       document.getElementById("processes").innerHTML = `
+        <div class="toolbar filters" style="margin-bottom:14px">
+          <select onchange="setActiveProcess(this.value)">${processOptions()}</select>
+          <button class="btn primary" onclick="generateDemoCandidates()">Generar postulantes ficticios</button>
+        </div>
         <div class="grid two" style="margin-bottom:14px">
           <div class="card pad">
             <h2>${p.title}</h2><p>${p.description}</p>
@@ -579,15 +594,46 @@
     function checkFinalists(){
       if (data.candidates.filter(c => c.stage === "Finalista").length >= 3) completeTask("t11");
     }
+    function generatedCandidate(idSuffix, base){
+      const process = data.activeProcess;
+      const id = `g${Date.now()}${idSuffix}`;
+      return { id, process, name:base.name, email:base.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replaceAll(" ",".")+"@demo.cl", phone:"+56 9 0000 0000", source:base.source, stage:base.stage, score:base.score, exp:base.exp, city:base.city, salary:base.salary, tags:base.tags, risks:base.risks, summary:base.summary, applied:new Date().toISOString().slice(0,10), cv:base.summary, answers:{ presencial:base.presencial, exp:String(base.exp), reclamos:base.reclamos, sistema:base.sistema, caso:base.caso }, matrix:base.matrix, humanDecision:base.decision, humanReason:base.reason, notes:"", discardReason:base.risks.join(", "), consent:true };
+    }
+    function generateDemoCandidates(){
+      const p = getProcess();
+      if (!data.requisitions.length) return toast("Primero crea una requisicion.");
+      if (!p.must.length || !p.nice.length || !p.competencies.length) return toast("Primero completa los criterios del proceso activo.");
+      if (data.candidates.some(c => c.process === data.activeProcess)) return toast("Este proceso ya tiene candidatos. Si quieres otros, ingresa postulaciones manuales.");
+      const samples = [
+        {name:"Camila Rojas",source:"Portal corporativo",stage:"Nuevo",score:92,exp:4,city:"Valparaiso",salary:820000,tags:["prioritario","reclamos","CRM"],risks:[],summary:"Experiencia en atencion presencial, gestion de reclamos y uso de CRM en servicios.",presencial:"Si",reclamos:"Gestiona reclamos con seguimiento y cierre informado.",sistema:"CRM Salesforce",caso:"Contuvo a usuario molesto, registro caso y coordino solucion.",matrix:{presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:1,claridad:2,renta:2},decision:"Revisar",reason:"Buen calce inicial; validar evidencia en entrevista."},
+        {name:"Diego Morales",source:"Referido",stage:"Revision CV",score:78,exp:3,city:"Valparaiso",salary:900000,tags:["Excel","administrativo"],risks:[],summary:"Administrativo interno con control documental, Excel y apoyo a clientes internos.",presencial:"Si",reclamos:"Algunos reclamos internos.",sistema:"ERP interno",caso:"Ordeno solicitudes pendientes y dio respuesta por prioridad.",matrix:{presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:2,claridad:2,renta:2},decision:"Revisar",reason:"Buen orden administrativo; validar trato con usuarios externos."},
+        {name:"Fernanda Perez",source:"Laborum",stage:"Revision CV",score:64,exp:5,city:"Valparaiso",salary:760000,tags:["call center","potencial"],risks:["CV desordenado"],summary:"Call center y reclamos. CV poco claro, pero respuestas muestran experiencia relevante.",presencial:"Si",reclamos:"Atiende reclamos diariamente.",sistema:"Sistema de tickets",caso:"Escucho, registro, escalo y cerro caso con usuario dificil.",matrix:{presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:1,claridad:0,renta:2},decision:"Revisar",reason:"Score bajo por CV; revisar experiencia real."},
+        {name:"Luis Araya",source:"Computrabajo",stage:"Nuevo",score:58,exp:0.5,city:"Valparaiso",salary:700000,tags:["formacion pertinente"],risks:["experiencia insuficiente"],summary:"Tecnico en administracion recien egresado con practica breve en oficina.",presencial:"Si",reclamos:"Sin experiencia directa.",sistema:"Excel basico",caso:"Apoyo administrativo simple.",matrix:{presencial:1,expMin:0,atencion:1,reclamos:0,crm:0,excel:1,claridad:2,renta:2},decision:"Descartar",reason:"No cumple experiencia minima."},
+        {name:"Natalia Soto",source:"LinkedIn",stage:"Preseleccionado",score:85,exp:6,city:"Vina del Mar",salary:920000,tags:["postventa","atencion masiva"],risks:[],summary:"Retail, postventa, cambios, reclamos y atencion masiva. Buen ajuste a condiciones.",presencial:"Si",reclamos:"Postventa y reclamos de clientes.",sistema:"POS/ERP",caso:"Gestiono cliente molesto por garantia y dio seguimiento.",matrix:{presencial:1,expMin:1,atencion:3,reclamos:2,crm:1,excel:1,claridad:2,renta:2},decision:"Revisar",reason:"Muy buen calce en atencion masiva."},
+        {name:"Javier Contreras",source:"LinkedIn",stage:"Descartado",score:88,exp:4,city:"Santiago",salary:980000,tags:["digital","CRM"],risks:["sin disponibilidad presencial"],summary:"Buen perfil digital y CRM, pero declara que solo puede trabajar remoto.",presencial:"No",reclamos:"Si",sistema:"HubSpot",caso:"Buen manejo digital, baja disponibilidad presencial.",matrix:{presencial:0,expMin:1,atencion:2,reclamos:1,crm:2,excel:2,claridad:2,renta:1},decision:"Descartar",reason:"No cumple requisito excluyente de presencialidad."},
+        {name:"Paula Herrera",source:"Carga manual",stage:"Preseleccionado",score:81,exp:8,city:"Valparaiso",salary:850000,tags:["secretaria","orden documental"],risks:[],summary:"Secretaria con coordinacion, archivo, agenda y atencion presencial.",presencial:"Si",reclamos:"Ocasionalmente.",sistema:"Sistema documental",caso:"Registro, seguimiento y trato cordial.",matrix:{presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:2,claridad:2,renta:2},decision:"Revisar",reason:"Fuerte orden y continuidad; validar reclamos complejos."},
+        {name:"Matias Vega",source:"Portal corporativo",stage:"Preseleccionado",score:90,exp:4,city:"Valparaiso",salary:930000,tags:["CRM","reportes","prioritario"],risks:["renta a validar"],summary:"Atencion, CRM, reportes semanales y seguimiento de casos en institucion de servicios.",presencial:"Si",reclamos:"Si",sistema:"CRM y Excel",caso:"Caso claro con registro, contacto y cierre.",matrix:{presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:2,claridad:2,renta:1},decision:"Revisar",reason:"Completo en atencion, sistemas y reportes; revisar renta."},
+        {name:"Rocio Fuentes",source:"Referido",stage:"Revision CV",score:52,exp:7,city:"Valparaiso",salary:800000,tags:["habilidades transferibles"],risks:["trayectoria no tradicional"],summary:"Reconvertion desde educacion. Alta comunicacion y seguimiento de apoderados, poca experiencia administrativa formal.",presencial:"Si",reclamos:"Familias y casos sensibles.",sistema:"Plataforma educativa",caso:"Contencion y seguimiento de casos sensibles.",matrix:{presencial:1,expMin:1,atencion:2,reclamos:2,crm:1,excel:1,claridad:2,renta:2},decision:"Revisar",reason:"Potencial por habilidades transferibles."},
+        {name:"Andres Leiva",source:"Computrabajo",stage:"Revision CV",score:89,exp:2,city:"Valparaiso",salary:940000,tags:["muchas palabras clave"],risks:["poca evidencia"],summary:"CV con muchas palabras clave: CRM, reclamos, Excel, usuario. Pocos ejemplos concretos.",presencial:"Si",reclamos:"Dice que si, sin detalle.",sistema:"CRM no especificado",caso:"Respuesta generica.",matrix:{presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:1,claridad:1,renta:1},decision:"Revisar",reason:"Alto score por keywords; requiere evidencia."}
+      ];
+      data.candidates.push(...samples.map((sample, index) => generatedCandidate(index, sample)));
+      data.audit.unshift(log(`Se generaron ${samples.length} postulantes ficticios para ${p.title}`, role()));
+      completeTask("t3");
+      save(); render(); toast("Postulantes ficticios generados para el proceso activo.");
+    }
 
     function renderCandidates(){
-      const sorted = [...data.candidates].sort((a,b)=>b.score-a.score);
+      const current = getProcess();
+      const sorted = data.candidates.filter(c => c.process === data.activeProcess).sort((a,b)=>b.score-a.score);
       document.getElementById("candidates").innerHTML = `
         <div class="toolbar filters" style="margin-bottom:14px">
+          <select onchange="setActiveProcess(this.value)">${processOptions()}</select>
           <input id="qCand" placeholder="Buscar candidato, etiqueta o alerta" oninput="filterCandidates()">
           <select id="stageCand" onchange="filterCandidates()"><option value="">Todas las etapas</option>${stages.map(s=>`<option>${s}</option>`).join("")}</select>
           <select id="decisionCand" onchange="filterCandidates()"><option value="">Todas las decisiones humanas</option><option>Avanzar</option><option>Revisar</option><option>Descartar</option></select>
+          <button class="btn primary" onclick="generateDemoCandidates()">Generar postulantes</button>
         </div>
+        <div class="hint" style="margin-bottom:14px">Mostrando candidatos asociados a: <b>${escapeHtml(current.title)}</b></div>
         <div class="card">
           <table id="candidateTable"><thead><tr><th>Candidato</th><th>Etapa</th><th>Score ATS</th><th>Decision humana</th><th>Alertas</th><th></th></tr></thead><tbody>${candidateRows(sorted)}</tbody></table>
         </div>
