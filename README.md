@@ -40,7 +40,7 @@ La app guarda los cambios en `localStorage` e incluye un boton **Reiniciar demo*
 
 Al reiniciar, las 12 actividades vuelven a quedar pendientes. Cuando el usuario realiza y guarda una accion clave, la plataforma marca el hito como completado y muestra una alerta de avance.
 
-El boton **Modo desde cero** deja vacios los campos que debe construir el estudiante. Los formularios validan que no se guarden hitos sin datos suficientes, por ejemplo requisicion incompleta, criterios vacios, postulacion sin respuestas o mensaje de descarte sin candidato descartado.
+El boton **Modo desde cero** inicia un proceso limpio: sin requisicion, sin candidatos, sin entrevistas, sin scorecards y sin comunicaciones. El estudiante debe crear primero la requisicion; solo despues puede ingresar postulaciones asociadas al proceso. Los formularios validan que no se guarden hitos sin datos suficientes, por ejemplo requisicion incompleta, criterios vacios, postulacion sin respuestas o mensaje de descarte sin candidato descartado.
 
 ## Enfoque pedagogico
 

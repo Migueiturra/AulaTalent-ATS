@@ -307,6 +307,7 @@
       value.processes[0].must = [];
       value.processes[0].nice = [];
       value.processes[0].competencies = [];
+      value.candidates = [];
       value.interviews = [];
       value.scorecards = {};
       value.communications = [];
@@ -573,11 +574,12 @@
           <select id="decisionCand" onchange="filterCandidates()"><option value="">Todas las decisiones humanas</option><option>Avanzar</option><option>Revisar</option><option>Descartar</option></select>
         </div>
         <div class="card">
-          <table id="candidateTable"><thead><tr><th>Candidato</th><th>Etapa</th><th>Score ATS</th><th>Decision humana</th><th>Alertas docentes</th><th></th></tr></thead><tbody>${candidateRows(sorted)}</tbody></table>
+          <table id="candidateTable"><thead><tr><th>Candidato</th><th>Etapa</th><th>Score ATS</th><th>Decision humana</th><th>Alertas</th><th></th></tr></thead><tbody>${candidateRows(sorted)}</tbody></table>
         </div>
         <div class="card pad" style="margin-top:14px"><h2>Comparacion critica</h2>${comparison()}<div class="actions" style="margin-top:12px"><button class="btn primary" onclick="completeTaskAndRender('t10')">Marcar tarea 10 completada</button></div></div>`;
     }
     function candidateRows(list){
+      if (!list.length) return `<tr><td colspan="6"><span class="small">No hay candidatos registrados. Ingresa postulaciones desde el portal candidato para poblar esta base.</span></td></tr>`;
       return list.map(c=>`<tr data-stage="${c.stage}" data-decision="${c.humanDecision}" data-search="${escapeHtml((c.name+" "+c.tags.join(" ")+" "+c.risks.join(" ")+" "+c.summary).toLowerCase())}">
         <td><b>${c.name}</b><br><span class="small">${c.source} · ${c.city} · ${money(c.salary)}</span></td>
         <td>${c.stage}</td><td><b>${c.score}%</b></td><td>${decisionPill(c.humanDecision)}<br><span class="small">${escapeHtml(c.humanReason)}</span></td>
@@ -591,9 +593,10 @@
       document.querySelectorAll("#candidateTable tbody tr").forEach(row => row.classList.toggle("hide", (q && !row.dataset.search.includes(q)) || (st && row.dataset.stage !== st) || (dec && row.dataset.decision !== dec)));
     }
     function comparison(){
+      if (!data.candidates.length) return `<p class="small">La comparacion estara disponible cuando existan candidatos con score y decision humana.</p>`;
       const highRisk = data.candidates.filter(c=>c.score>=85 && (c.risks.length || c.humanDecision!=="Avanzar"));
       const lowPotential = data.candidates.filter(c=>c.score<65 && c.humanDecision!=="Descartar");
-      return `<div class="grid two"><div><h3>Posibles falsos positivos</h3>${highRisk.map(c=>`<p><b>${c.name}</b>: ${c.score}% ATS. ${escapeHtml(c.humanReason)}</p>`).join("")}</div><div><h3>Posibles candidatos subvalorados</h3>${lowPotential.map(c=>`<p><b>${c.name}</b>: ${c.score}% ATS. ${escapeHtml(c.humanReason)}</p>`).join("")}</div></div>`;
+      return `<div class="grid two"><div><h3>Posibles falsos positivos</h3>${highRisk.length ? highRisk.map(c=>`<p><b>${c.name}</b>: ${c.score}% ATS. ${escapeHtml(c.humanReason)}</p>`).join("") : `<p class="small">Sin casos detectados por ahora.</p>`}</div><div><h3>Posibles candidatos subvalorados</h3>${lowPotential.length ? lowPotential.map(c=>`<p><b>${c.name}</b>: ${c.score}% ATS. ${escapeHtml(c.humanReason)}</p>`).join("") : `<p class="small">Sin casos detectados por ahora.</p>`}</div></div>`;
     }
 
     function renderScreening(){
@@ -601,7 +604,7 @@
         <div class="hint warning" style="margin-bottom:14px">La recomendacion de la matriz es orientativa. Un requisito excluyente no cumplido debe revisarse con criterio profesional y quedar trazado.</div>
         <div class="card" style="overflow:auto">
           <table class="matrix"><thead><tr><th>Candidato</th>${criteria.map(c=>`<th>${c[1]}</th>`).join("")}<th>Total</th><th>Recomendacion</th><th>Decision humana</th></tr></thead>
-          <tbody>${data.candidates.map(screenRow).join("")}</tbody></table>
+          <tbody>${data.candidates.length ? data.candidates.map(screenRow).join("") : `<tr><td colspan="${criteria.length + 4}"><span class="small">No hay candidatos para filtrar. Primero registra postulaciones.</span></td></tr>`}</tbody></table>
         </div>`;
     }
     function screenRow(c){
@@ -628,21 +631,22 @@
     function updateHumanDecision(id,value){ const c = getCandidate(id); c.humanDecision = value; completeTask("t5"); data.audit.unshift(log(`Decision humana registrada para ${c.name}: ${value}`, role())); save(); render(); toast("Decision humana actualizada."); }
 
     function renderInterviews(){
+      const eligible = data.candidates.filter(c=>c.humanDecision!=="Descartar");
       document.getElementById("interviews").innerHTML = `
         <div class="grid two">
           <div class="card pad"><h2>Agendar entrevista</h2>
-            <div class="form">
-              <label><span>Candidato</span><select id="intCand">${data.candidates.filter(c=>c.humanDecision!=="Descartar").map(c=>`<option value="${c.id}">${c.name}</option>`).join("")}</select></label>
+            ${eligible.length ? `<div class="form">
+              <label><span>Candidato</span><select id="intCand">${eligible.map(c=>`<option value="${c.id}">${c.name}</option>`).join("")}</select></label>
               <label><span>Fecha</span><input id="intDate" type="date" value="2026-07-12"></label>
               <label><span>Hora</span><input id="intTime" type="time" value="10:00"></label>
               <label><span>Modalidad</span><select id="intMode"><option>Presencial</option><option>Online</option></select></label>
               <label><span>Entrevistador/a</span><input id="intBy" value="Jefatura solicitante"></label>
               <label><span>Observaciones</span><textarea id="intNotes">Validar manejo de reclamos y ajuste a condiciones.</textarea></label>
               <button class="btn primary" onclick="scheduleInterview()">Agendar y generar invitacion</button>
-            </div>
+            </div>` : `<p class="small">No hay candidatos disponibles para entrevista. Registra postulaciones y clasifica al menos un candidato como revisable o avanzable.</p>`}
           </div>
           <div class="card pad"><h2>Entrevistas registradas</h2>
-            <table><thead><tr><th>Candidato</th><th>Fecha</th><th>Modalidad</th><th></th></tr></thead><tbody>${data.interviews.map(i=>`<tr><td>${getCandidate(i.candidate)?.name}</td><td>${i.date} ${i.time}</td><td>${i.mode}</td><td><button class="btn small" onclick="openInterview('${i.id}')">Mensaje</button></td></tr>`).join("")}</tbody></table>
+            <table><thead><tr><th>Candidato</th><th>Fecha</th><th>Modalidad</th><th></th></tr></thead><tbody>${data.interviews.length ? data.interviews.map(i=>`<tr><td>${getCandidate(i.candidate)?.name}</td><td>${i.date} ${i.time}</td><td>${i.mode}</td><td><button class="btn small" onclick="openInterview('${i.id}')">Mensaje</button></td></tr>`).join("") : `<tr><td colspan="4"><span class="small">Sin entrevistas registradas.</span></td></tr>`}</tbody></table>
           </div>
         </div>`;
     }
@@ -655,9 +659,10 @@
     function openInterview(id){ const i = data.interviews.find(x=>x.id===id); openModal("Invitacion a entrevista", `<textarea style="min-height:260px">${escapeHtml(i.message)}</textarea>`); }
 
     function renderScorecards(){
+      const eligible = data.candidates.filter(c=>c.humanDecision!=="Descartar");
       document.getElementById("scorecards").innerHTML = `
-        <div class="toolbar filters" style="margin-bottom:14px"><select id="scoreCand">${data.candidates.filter(c=>c.humanDecision!=="Descartar").map(c=>`<option value="${c.id}">${c.name}</option>`).join("")}</select><button class="btn primary" onclick="openScorecard(document.getElementById('scoreCand').value)">Completar scorecard</button></div>
-        <div class="card"><table><thead><tr><th>Candidato</th><th>Promedio</th><th>Recomendacion</th><th>Comentario</th><th></th></tr></thead><tbody>${Object.entries(data.scorecards).map(([id,sc])=>`<tr><td>${getCandidate(id)?.name}</td><td><b>${avg(sc)}/5</b></td><td>${sc.recommendation}</td><td>${escapeHtml(sc.comment)}</td><td><button class="btn small" onclick="openScorecard('${id}')">Editar</button></td></tr>`).join("")}</tbody></table></div>`;
+        <div class="toolbar filters" style="margin-bottom:14px">${eligible.length ? `<select id="scoreCand">${eligible.map(c=>`<option value="${c.id}">${c.name}</option>`).join("")}</select><button class="btn primary" onclick="openScorecard(document.getElementById('scoreCand').value)">Completar scorecard</button>` : `<span class="small">No hay candidatos disponibles para evaluar.</span>`}</div>
+        <div class="card"><table><thead><tr><th>Candidato</th><th>Promedio</th><th>Recomendacion</th><th>Comentario</th><th></th></tr></thead><tbody>${Object.entries(data.scorecards).length ? Object.entries(data.scorecards).map(([id,sc])=>`<tr><td>${getCandidate(id)?.name}</td><td><b>${avg(sc)}/5</b></td><td>${sc.recommendation}</td><td>${escapeHtml(sc.comment)}</td><td><button class="btn small" onclick="openScorecard('${id}')">Editar</button></td></tr>`).join("") : `<tr><td colspan="5"><span class="small">Sin scorecards registradas.</span></td></tr>`}</tbody></table></div>`;
     }
     function openScorecard(id){
       const c = getCandidate(id), sc = data.scorecards[id] || {comunicacion:3,experiencia:3,motivacion:3,dificil:3,orden:3,condiciones:3,comment:"",recommendation:"Revisar",date:new Date().toISOString().slice(0,10),validate:""};
@@ -811,6 +816,7 @@ Coordinar entrevistas finales con jefatura, completar pauta de evaluacion y regi
     function moveFromFicha(id){ moveCandidate(id, val("moveStage")); closeModal(); }
     function openVacancy(){ const p = getProcess(); openModal("Oferta simulada", `<div class="card pad"><h2>${p.title}</h2><p>${p.description}</p>${listBlock("Requisitos excluyentes",p.must,"red")}${listBlock("Deseables",p.nice,"amber")}<button class="btn primary" onclick="openPortal()">Postular</button></div>`); }
     function openPortal(){
+      if (!data.requisitions.length) { toast("Primero crea una requisicion para asociar postulaciones al proceso."); return; }
       const p = getProcess();
       openModal("Portal candidato", `<div class="grid two">
         <div class="card pad"><h2>${p.title}</h2><p>${p.description}</p><div class="hint">Formulario simulado para crear una postulacion asociada al proceso activo.</div></div>
