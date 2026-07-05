@@ -17,9 +17,10 @@ El caso trabaja una vacante de **Asistente de Atencion y Gestion Administrativa*
 ## Modulos
 
 - Dashboard.
-- Dashboard con 12 tareas tipo mision, progreso guardado y alerta de tarea completada.
-- Modo ejercicio con guia de 12 tareas.
+- Dashboard con checklist operativo de 12 actividades, progreso guardado y alerta al completar hitos.
+- Plan de trabajo del proceso.
 - Requisiciones y criterios del cargo.
+- Creacion de nuevas requisiciones ficticias.
 - Proceso de seleccion con Kanban.
 - Portal candidato con postulacion ficticia.
 - Base de candidatos y ficha individual.
@@ -27,7 +28,7 @@ El caso trabaja una vacante de **Asistente de Atencion y Gestion Administrativa*
 - Entrevistas e invitaciones simuladas.
 - Scorecards de entrevista.
 - Comunicaciones simuladas.
-- Reporte ejecutivo y terna recomendada.
+- Reporte ejecutivo basado en candidatos movidos a la etapa Finalista.
 - Configuracion, roles, privacidad y trazabilidad.
 
 ## Uso
@@ -36,8 +37,8 @@ Abrir `index.html` en el navegador o publicar la carpeta en GitHub Pages. No req
 
 La app guarda los cambios en `localStorage` e incluye un boton **Reiniciar demo** para volver al caso original.
 
-Al reiniciar, las 12 tareas del ejercicio vuelven a quedar pendientes. Cuando el grupo realiza y guarda una accion clave, la plataforma marca la tarea como completada y muestra una alerta de avance.
+Al reiniciar, las 12 actividades vuelven a quedar pendientes. Cuando el usuario realiza y guarda una accion clave, la plataforma marca el hito como completado y muestra una alerta de avance.
 
 ## Enfoque pedagogico
 
-El ATS ordena informacion y apoya decisiones, pero no reemplaza el juicio profesional. El ranking automatico debe compararse con evidencia humana, criterios definidos y trazabilidad de motivos.
+El ATS ordena informacion y apoya decisiones, pero no reemplaza el juicio profesional. El ranking automatico debe compararse con evidencia humana, criterios definidos y trazabilidad de motivos. La terna final se construye moviendo candidatos dentro del pipeline, no desde un boton aislado de reporte.
