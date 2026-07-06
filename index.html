@@ -339,6 +339,9 @@
     function candidateInActive(id){ const c = getCandidate(id); return c && c.process === data.activeProcess; }
     function processOptions(){ return data.processes.map(p => `<option value="${p.id}" ${p.id===data.activeProcess?"selected":""}>${escapeHtml(p.title)}</option>`).join(""); }
     function setActiveProcess(id){ data.activeProcess = id; save(); render(); }
+    function processToolbar(help){
+      return `<div class="toolbar filters" style="margin-bottom:14px"><label style="margin:0"><span>Proceso activo</span><select onchange="setActiveProcess(this.value)">${processOptions()}</select></label><span class="small">${help}</span></div>`;
+    }
     function escapeHtml(v){ return String(v ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[m])); }
     function requiredValues(ids, label){
       const missing = ids.filter(id => !String(val(id) ?? "").trim());
@@ -380,10 +383,7 @@
     function renderDashboard(){
       const c = data.candidates.filter(x => x.process === data.activeProcess), reviewed = c.filter(x => x.stage !== "Nuevo").length, pre = c.filter(x => ["Preseleccionado","Entrevista agendada","Entrevistado","Finalista","Oferta","Contratado"].includes(x.stage)).length;
       document.getElementById("dashboard").innerHTML = `
-        <div class="toolbar filters" style="margin-bottom:14px">
-          <select onchange="setActiveProcess(this.value)">${processOptions()}</select>
-          <span class="small">El dashboard muestra indicadores del proceso seleccionado.</span>
-        </div>
+        ${processToolbar("Indicadores calculados solo con la requisicion seleccionada.")}
         <div class="grid stats">
           ${metric("Postulantes", c.length, "Recibidos en el proceso")}
           ${metric("Revisados", reviewed, "Con etapa o decision")}
@@ -552,10 +552,8 @@
     function renderProcesses(){
       const p = getProcess();
       document.getElementById("processes").innerHTML = `
-        <div class="toolbar filters" style="margin-bottom:14px">
-          <select onchange="setActiveProcess(this.value)">${processOptions()}</select>
-          <button class="btn primary" onclick="generateDemoCandidates()">Generar postulantes ficticios</button>
-        </div>
+        ${processToolbar("El pipeline muestra solo candidatos asociados a este proceso.")}
+        <div class="toolbar filters" style="margin-bottom:14px"><button class="btn primary" onclick="generateDemoCandidates()">Generar postulantes ficticios</button></div>
         <div class="grid two" style="margin-bottom:14px">
           <div class="card pad">
             <h2>${p.title}</h2><p>${p.description}</p>
@@ -632,8 +630,8 @@
       const current = getProcess();
       const sorted = candidatesForActive().sort((a,b)=>b.score-a.score);
       document.getElementById("candidates").innerHTML = `
+        ${processToolbar("La base de candidatos se filtra por requisicion para evitar mezclar procesos.")}
         <div class="toolbar filters" style="margin-bottom:14px">
-          <select onchange="setActiveProcess(this.value)">${processOptions()}</select>
           <input id="qCand" placeholder="Buscar candidato, etiqueta o alerta" oninput="filterCandidates()">
           <select id="stageCand" onchange="filterCandidates()"><option value="">Todas las etapas</option>${stages.map(s=>`<option>${s}</option>`).join("")}</select>
           <select id="decisionCand" onchange="filterCandidates()"><option value="">Todas las decisiones humanas</option><option>Avanzar</option><option>Revisar</option><option>Descartar</option></select>
@@ -669,7 +667,7 @@
 
     function renderScreening(){
       document.getElementById("screening").innerHTML = `
-        <div class="toolbar filters" style="margin-bottom:14px"><select onchange="setActiveProcess(this.value)">${processOptions()}</select></div>
+        ${processToolbar("La matriz evalua solo postulaciones del proceso activo.")}
         <div class="hint warning" style="margin-bottom:14px">La recomendacion de la matriz es orientativa. Un requisito excluyente no cumplido debe revisarse con criterio profesional y quedar trazado.</div>
         <div class="card" style="overflow:auto">
           <table class="matrix"><thead><tr><th>Candidato</th>${criteria.map(c=>`<th>${c[1]}</th>`).join("")}<th>Total</th><th>Recomendacion</th><th>Decision humana</th></tr></thead>
@@ -704,7 +702,7 @@
       const processInterviewIds = new Set(candidatesForActive().map(c => c.id));
       const interviews = data.interviews.filter(i => processInterviewIds.has(i.candidate));
       document.getElementById("interviews").innerHTML = `
-        <div class="toolbar filters" style="margin-bottom:14px"><select onchange="setActiveProcess(this.value)">${processOptions()}</select></div>
+        ${processToolbar("Las entrevistas disponibles pertenecen a candidatos de este proceso.")}
         <div class="grid two">
           <div class="card pad"><h2>Agendar entrevista</h2>
             ${eligible.length ? `<div class="form">
@@ -734,7 +732,7 @@
       const eligible = candidatesForActive().filter(c=>c.humanDecision!=="Descartar");
       const rows = Object.entries(data.scorecards).filter(([id]) => candidateInActive(id));
       document.getElementById("scorecards").innerHTML = `
-        <div class="toolbar filters" style="margin-bottom:14px"><select onchange="setActiveProcess(this.value)">${processOptions()}</select></div>
+        ${processToolbar("Las scorecards se guardan contra candidatos del proceso activo.")}
         <div class="toolbar filters" style="margin-bottom:14px">${eligible.length ? `<select id="scoreCand">${eligible.map(c=>`<option value="${c.id}">${c.name}</option>`).join("")}</select><button class="btn primary" onclick="openScorecard(document.getElementById('scoreCand').value)">Completar scorecard</button>` : `<span class="small">No hay candidatos disponibles para evaluar.</span>`}</div>
         <div class="card"><table><thead><tr><th>Candidato</th><th>Promedio</th><th>Recomendacion</th><th>Comentario</th><th></th></tr></thead><tbody>${rows.length ? rows.map(([id,sc])=>`<tr><td>${getCandidate(id)?.name}</td><td><b>${avg(sc)}/5</b></td><td>${sc.recommendation}</td><td>${escapeHtml(sc.comment)}</td><td><button class="btn small" onclick="openScorecard('${id}')">Editar</button></td></tr>`).join("") : `<tr><td colspan="5"><span class="small">Sin scorecards registradas para este proceso.</span></td></tr>`}</tbody></table></div>`;
     }
@@ -770,7 +768,7 @@
       const activeIds = new Set(candidatesForActive().map(c => c.id));
       const communications = data.communications.filter(m => !m.candidateIds || m.candidateIds.some(id => activeIds.has(id)));
       document.getElementById("communications").innerHTML = `
-        <div class="toolbar filters" style="margin-bottom:14px"><select onchange="setActiveProcess(this.value)">${processOptions()}</select></div>
+        ${processToolbar("Los mensajes y destinatarios se limitan a esta requisicion.")}
         <div class="grid two">
           <div class="card pad"><h2>Generar comunicacion simulada</h2>
             <div class="form">
@@ -821,7 +819,7 @@
     function renderReports(){
       const finalists = shortlist();
       document.getElementById("reports").innerHTML = `
-        <div class="toolbar filters" style="margin-bottom:14px"><select onchange="setActiveProcess(this.value)">${processOptions()}</select></div>
+        ${processToolbar("El reporte ejecutivo resume solo candidatos, entrevistas y evaluaciones de este proceso.")}
         <div class="grid two">
           <div class="card pad"><h2>Finalistas en pipeline</h2>${finalists.length ? finalists.map((c,i)=>`<div class="event"><b>${i+1}. ${c.name}</b><span>${c.score}% ATS · Decision: ${c.humanDecision}</span><p>${escapeHtml(c.humanReason)}</p><button class="btn small" onclick="openCandidate('${c.id}')">Ver evidencia</button></div>`).join("") : `<p class="small">Aun no hay candidatos en etapa Finalista. Mueve candidatos desde el Kanban para construir la terna.</p>`}${finalists.length < 3 ? `<div class="hint warning" style="margin-top:12px">Faltan ${3-finalists.length} finalista(s) para completar una terna. Vuelve al pipeline y mueve candidatos a Finalista cuando tengas evidencia suficiente.</div>` : `<div class="hint" style="margin-top:12px">Terna formada desde la etapa Finalista del pipeline.</div>`}</div>
           <div class="card pad"><h2>Reporte ejecutivo</h2><div class="actions" style="margin-bottom:10px"><button class="btn primary" onclick="generateReport()">Generar reporte</button><button class="btn" onclick="copyReport()">Copiar reporte</button></div><div id="reportText" class="report-box">${escapeHtml(buildReport())}</div></div>
