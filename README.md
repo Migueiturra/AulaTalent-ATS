@@ -25,6 +25,7 @@ El caso trabaja una vacante de **Asistente de Atencion y Gestion Administrativa*
 - Modo desde cero para que estudiantes completen requisicion, criterios, postulaciones, entrevistas y comunicaciones sin textos prellenados.
 - Generacion de postulantes ficticios asociados al proceso activo, disponible despues de crear requisicion y criterios.
 - Selector de proceso en Pipeline y Candidatos para trabajar con mas de una requisicion/proceso.
+- Dashboard, Pipeline, Candidatos, Filtro curricular, Entrevistas, Scorecards, Comunicaciones y Reporte dependen del proceso activo.
 - Proceso de seleccion con Kanban.
 - Portal candidato con postulacion ficticia.
 - Base de candidatos y ficha individual.

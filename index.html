@@ -335,6 +335,8 @@
     function canEdit(){ return !["Candidato","Observador docente"].includes(role()); }
     function getCandidate(id){ return data.candidates.find(c => c.id === id); }
     function getProcess(){ return data.processes.find(p => p.id === data.activeProcess); }
+    function candidatesForActive(){ return data.candidates.filter(c => c.process === data.activeProcess); }
+    function candidateInActive(id){ const c = getCandidate(id); return c && c.process === data.activeProcess; }
     function processOptions(){ return data.processes.map(p => `<option value="${p.id}" ${p.id===data.activeProcess?"selected":""}>${escapeHtml(p.title)}</option>`).join(""); }
     function setActiveProcess(id){ data.activeProcess = id; save(); render(); }
     function escapeHtml(v){ return String(v ?? "").replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[m])); }
@@ -378,6 +380,10 @@
     function renderDashboard(){
       const c = data.candidates.filter(x => x.process === data.activeProcess), reviewed = c.filter(x => x.stage !== "Nuevo").length, pre = c.filter(x => ["Preseleccionado","Entrevista agendada","Entrevistado","Finalista","Oferta","Contratado"].includes(x.stage)).length;
       document.getElementById("dashboard").innerHTML = `
+        <div class="toolbar filters" style="margin-bottom:14px">
+          <select onchange="setActiveProcess(this.value)">${processOptions()}</select>
+          <span class="small">El dashboard muestra indicadores del proceso seleccionado.</span>
+        </div>
         <div class="grid stats">
           ${metric("Postulantes", c.length, "Recibidos en el proceso")}
           ${metric("Revisados", reviewed, "Con etapa o decision")}
@@ -566,7 +572,7 @@
       bindDrag();
     }
     function lane(stage){
-      const cards = data.candidates.filter(c=>c.stage===stage);
+      const cards = candidatesForActive().filter(c=>c.stage===stage);
       return `<div class="lane" data-stage="${stage}"><div class="lane-head"><b>${stage}</b>${pill(cards.length,"gray")}</div><div class="lane-body">${cards.map(cardCandidate).join("") || `<span class="small">Sin candidatos</span>`}</div></div>`;
     }
     function cardCandidate(c){
@@ -592,7 +598,7 @@
       data.audit.unshift(log(`${c.name} paso de ${old} a ${stage}`, role())); save(); render(); toast(`${c.name} movido a ${stage}.`);
     }
     function checkFinalists(){
-      if (data.candidates.filter(c => c.stage === "Finalista").length >= 3) completeTask("t11");
+      if (candidatesForActive().filter(c => c.stage === "Finalista").length >= 3) completeTask("t11");
     }
     function generatedCandidate(idSuffix, base){
       const process = data.activeProcess;
@@ -624,7 +630,7 @@
 
     function renderCandidates(){
       const current = getProcess();
-      const sorted = data.candidates.filter(c => c.process === data.activeProcess).sort((a,b)=>b.score-a.score);
+      const sorted = candidatesForActive().sort((a,b)=>b.score-a.score);
       document.getElementById("candidates").innerHTML = `
         <div class="toolbar filters" style="margin-bottom:14px">
           <select onchange="setActiveProcess(this.value)">${processOptions()}</select>
@@ -654,18 +660,20 @@
       document.querySelectorAll("#candidateTable tbody tr").forEach(row => row.classList.toggle("hide", (q && !row.dataset.search.includes(q)) || (st && row.dataset.stage !== st) || (dec && row.dataset.decision !== dec)));
     }
     function comparison(){
-      if (!data.candidates.length) return `<p class="small">La comparacion estara disponible cuando existan candidatos con score y decision humana.</p>`;
-      const highRisk = data.candidates.filter(c=>c.score>=85 && (c.risks.length || c.humanDecision!=="Avanzar"));
-      const lowPotential = data.candidates.filter(c=>c.score<65 && c.humanDecision!=="Descartar");
+      const current = candidatesForActive();
+      if (!current.length) return `<p class="small">La comparacion estara disponible cuando existan candidatos con score y decision humana para este proceso.</p>`;
+      const highRisk = current.filter(c=>c.score>=85 && (c.risks.length || c.humanDecision!=="Avanzar"));
+      const lowPotential = current.filter(c=>c.score<65 && c.humanDecision!=="Descartar");
       return `<div class="grid two"><div><h3>Posibles falsos positivos</h3>${highRisk.length ? highRisk.map(c=>`<p><b>${c.name}</b>: ${c.score}% ATS. ${escapeHtml(c.humanReason)}</p>`).join("") : `<p class="small">Sin casos detectados por ahora.</p>`}</div><div><h3>Posibles candidatos subvalorados</h3>${lowPotential.length ? lowPotential.map(c=>`<p><b>${c.name}</b>: ${c.score}% ATS. ${escapeHtml(c.humanReason)}</p>`).join("") : `<p class="small">Sin casos detectados por ahora.</p>`}</div></div>`;
     }
 
     function renderScreening(){
       document.getElementById("screening").innerHTML = `
+        <div class="toolbar filters" style="margin-bottom:14px"><select onchange="setActiveProcess(this.value)">${processOptions()}</select></div>
         <div class="hint warning" style="margin-bottom:14px">La recomendacion de la matriz es orientativa. Un requisito excluyente no cumplido debe revisarse con criterio profesional y quedar trazado.</div>
         <div class="card" style="overflow:auto">
           <table class="matrix"><thead><tr><th>Candidato</th>${criteria.map(c=>`<th>${c[1]}</th>`).join("")}<th>Total</th><th>Recomendacion</th><th>Decision humana</th></tr></thead>
-          <tbody>${data.candidates.length ? data.candidates.map(screenRow).join("") : `<tr><td colspan="${criteria.length + 4}"><span class="small">No hay candidatos para filtrar. Primero registra postulaciones.</span></td></tr>`}</tbody></table>
+          <tbody>${candidatesForActive().length ? candidatesForActive().map(screenRow).join("") : `<tr><td colspan="${criteria.length + 4}"><span class="small">No hay candidatos para filtrar en este proceso. Primero registra postulaciones.</span></td></tr>`}</tbody></table>
         </div>`;
     }
     function screenRow(c){
@@ -692,8 +700,11 @@
     function updateHumanDecision(id,value){ const c = getCandidate(id); c.humanDecision = value; completeTask("t5"); data.audit.unshift(log(`Decision humana registrada para ${c.name}: ${value}`, role())); save(); render(); toast("Decision humana actualizada."); }
 
     function renderInterviews(){
-      const eligible = data.candidates.filter(c=>c.humanDecision!=="Descartar");
+      const eligible = candidatesForActive().filter(c=>c.humanDecision!=="Descartar");
+      const processInterviewIds = new Set(candidatesForActive().map(c => c.id));
+      const interviews = data.interviews.filter(i => processInterviewIds.has(i.candidate));
       document.getElementById("interviews").innerHTML = `
+        <div class="toolbar filters" style="margin-bottom:14px"><select onchange="setActiveProcess(this.value)">${processOptions()}</select></div>
         <div class="grid two">
           <div class="card pad"><h2>Agendar entrevista</h2>
             ${eligible.length ? `<div class="form">
@@ -707,7 +718,7 @@
             </div>` : `<p class="small">No hay candidatos disponibles para entrevista. Registra postulaciones y clasifica al menos un candidato como revisable o avanzable.</p>`}
           </div>
           <div class="card pad"><h2>Entrevistas registradas</h2>
-            <table><thead><tr><th>Candidato</th><th>Fecha</th><th>Modalidad</th><th></th></tr></thead><tbody>${data.interviews.length ? data.interviews.map(i=>`<tr><td>${getCandidate(i.candidate)?.name}</td><td>${i.date} ${i.time}</td><td>${i.mode}</td><td><button class="btn small" onclick="openInterview('${i.id}')">Mensaje</button></td></tr>`).join("") : `<tr><td colspan="4"><span class="small">Sin entrevistas registradas.</span></td></tr>`}</tbody></table>
+            <table><thead><tr><th>Candidato</th><th>Fecha</th><th>Modalidad</th><th></th></tr></thead><tbody>${interviews.length ? interviews.map(i=>`<tr><td>${getCandidate(i.candidate)?.name}</td><td>${i.date} ${i.time}</td><td>${i.mode}</td><td><button class="btn small" onclick="openInterview('${i.id}')">Mensaje</button></td></tr>`).join("") : `<tr><td colspan="4"><span class="small">Sin entrevistas registradas para este proceso.</span></td></tr>`}</tbody></table>
           </div>
         </div>`;
     }
@@ -720,10 +731,12 @@
     function openInterview(id){ const i = data.interviews.find(x=>x.id===id); openModal("Invitacion a entrevista", `<textarea style="min-height:260px">${escapeHtml(i.message)}</textarea>`); }
 
     function renderScorecards(){
-      const eligible = data.candidates.filter(c=>c.humanDecision!=="Descartar");
+      const eligible = candidatesForActive().filter(c=>c.humanDecision!=="Descartar");
+      const rows = Object.entries(data.scorecards).filter(([id]) => candidateInActive(id));
       document.getElementById("scorecards").innerHTML = `
+        <div class="toolbar filters" style="margin-bottom:14px"><select onchange="setActiveProcess(this.value)">${processOptions()}</select></div>
         <div class="toolbar filters" style="margin-bottom:14px">${eligible.length ? `<select id="scoreCand">${eligible.map(c=>`<option value="${c.id}">${c.name}</option>`).join("")}</select><button class="btn primary" onclick="openScorecard(document.getElementById('scoreCand').value)">Completar scorecard</button>` : `<span class="small">No hay candidatos disponibles para evaluar.</span>`}</div>
-        <div class="card"><table><thead><tr><th>Candidato</th><th>Promedio</th><th>Recomendacion</th><th>Comentario</th><th></th></tr></thead><tbody>${Object.entries(data.scorecards).length ? Object.entries(data.scorecards).map(([id,sc])=>`<tr><td>${getCandidate(id)?.name}</td><td><b>${avg(sc)}/5</b></td><td>${sc.recommendation}</td><td>${escapeHtml(sc.comment)}</td><td><button class="btn small" onclick="openScorecard('${id}')">Editar</button></td></tr>`).join("") : `<tr><td colspan="5"><span class="small">Sin scorecards registradas.</span></td></tr>`}</tbody></table></div>`;
+        <div class="card"><table><thead><tr><th>Candidato</th><th>Promedio</th><th>Recomendacion</th><th>Comentario</th><th></th></tr></thead><tbody>${rows.length ? rows.map(([id,sc])=>`<tr><td>${getCandidate(id)?.name}</td><td><b>${avg(sc)}/5</b></td><td>${sc.recommendation}</td><td>${escapeHtml(sc.comment)}</td><td><button class="btn small" onclick="openScorecard('${id}')">Editar</button></td></tr>`).join("") : `<tr><td colspan="5"><span class="small">Sin scorecards registradas para este proceso.</span></td></tr>`}</tbody></table></div>`;
     }
     function openScorecard(id){
       const c = getCandidate(id), sc = data.scorecards[id] || {comunicacion:3,experiencia:3,motivacion:3,dificil:3,orden:3,condiciones:3,comment:"",recommendation:"Revisar",date:new Date().toISOString().slice(0,10),validate:""};
@@ -754,7 +767,10 @@
     function avg(sc){ return (["comunicacion","experiencia","motivacion","dificil","orden","condiciones"].reduce((s,k)=>s+Number(sc[k]||0),0)/6).toFixed(1); }
 
     function renderCommunications(){
+      const activeIds = new Set(candidatesForActive().map(c => c.id));
+      const communications = data.communications.filter(m => !m.candidateIds || m.candidateIds.some(id => activeIds.has(id)));
       document.getElementById("communications").innerHTML = `
+        <div class="toolbar filters" style="margin-bottom:14px"><select onchange="setActiveProcess(this.value)">${processOptions()}</select></div>
         <div class="grid two">
           <div class="card pad"><h2>Generar comunicacion simulada</h2>
             <div class="form">
@@ -764,7 +780,7 @@
               <div class="actions"><button class="btn" onclick="loadSuggestedTemplate()">Usar plantilla sugerida</button><button class="btn primary" onclick="saveMessage()">Registrar en historial</button></div>
             </div>
           </div>
-          <div class="card pad"><h2>Mensajes registrados</h2><div class="timeline">${data.communications.map(m=>`<div class="event"><b>${m.title}</b><span>${m.to} · ${m.at}</span><p>${escapeHtml(m.body).slice(0,170)}...</p></div>`).join("") || "<p class='small'>Aun no hay mensajes generados.</p>"}</div></div>
+          <div class="card pad"><h2>Mensajes registrados</h2><div class="timeline">${communications.map(m=>`<div class="event"><b>${m.title}</b><span>${m.to} · ${m.at}</span><p>${escapeHtml(m.body).slice(0,170)}...</p></div>`).join("") || "<p class='small'>Aun no hay mensajes generados para este proceso.</p>"}</div></div>
         </div>`;
       renderMessageTargets();
     }
@@ -774,10 +790,10 @@
       const target = document.getElementById("msgTargets");
       if (!target) return;
       if (type === "reject") {
-        const discarded = data.candidates.filter(c => c.stage === "Descartado");
+        const discarded = candidatesForActive().filter(c => c.stage === "Descartado");
         target.innerHTML = `<label><span>Candidatos descartados</span><div class="card pad" style="box-shadow:none">${discarded.length ? discarded.map(c=>`<label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" class="msgCandidate" value="${c.id}" style="width:auto;min-height:auto"> ${escapeHtml(c.name)} <span class="small">${escapeHtml(c.discardReason || "sin motivo registrado")}</span></label>`).join("") : `<span class="small">No hay candidatos en etapa Descartado. Mueve candidatos a Descartado antes de registrar un cierre.</span>`}</div></label>`;
       } else {
-        target.innerHTML = `<label><span>Candidato</span><select id="msgCand">${data.candidates.map(c=>`<option value="${c.id}">${escapeHtml(c.name)} - ${escapeHtml(c.stage)}</option>`).join("")}</select></label>`;
+        target.innerHTML = `<label><span>Candidato</span><select id="msgCand">${candidatesForActive().map(c=>`<option value="${c.id}">${escapeHtml(c.name)} - ${escapeHtml(c.stage)}</option>`).join("")}</select></label>`;
       }
     }
     function selectedMessageCandidates(){
@@ -796,7 +812,7 @@
       if (!selected.length) return toast(type === "reject" ? "Selecciona al menos un candidato descartado." : "Selecciona un candidato.");
       if (type === "reject" && selected.some(c => c.stage !== "Descartado")) return toast("El mensaje de descarte solo puede registrarse para candidatos en etapa Descartado.");
       if (body.length < 80) return toast("Redacta un mensaje mas completo antes de registrarlo.");
-      data.communications.unshift({title:type,to:selected.map(c=>c.name).join(", "),body,at:new Date().toLocaleString("es-CL")});
+      data.communications.unshift({title:type,to:selected.map(c=>c.name).join(", "),candidateIds:selected.map(c=>c.id),process:data.activeProcess,body,at:new Date().toLocaleString("es-CL")});
       if (type === "reject") completeTask("t9");
       data.audit.unshift(log(`Comunicacion registrada para ${selected.map(c=>c.name).join(", ")}`, role()));
       save(); renderCommunications(); toast("Mensaje registrado.");
@@ -805,25 +821,26 @@
     function renderReports(){
       const finalists = shortlist();
       document.getElementById("reports").innerHTML = `
+        <div class="toolbar filters" style="margin-bottom:14px"><select onchange="setActiveProcess(this.value)">${processOptions()}</select></div>
         <div class="grid two">
           <div class="card pad"><h2>Finalistas en pipeline</h2>${finalists.length ? finalists.map((c,i)=>`<div class="event"><b>${i+1}. ${c.name}</b><span>${c.score}% ATS · Decision: ${c.humanDecision}</span><p>${escapeHtml(c.humanReason)}</p><button class="btn small" onclick="openCandidate('${c.id}')">Ver evidencia</button></div>`).join("") : `<p class="small">Aun no hay candidatos en etapa Finalista. Mueve candidatos desde el Kanban para construir la terna.</p>`}${finalists.length < 3 ? `<div class="hint warning" style="margin-top:12px">Faltan ${3-finalists.length} finalista(s) para completar una terna. Vuelve al pipeline y mueve candidatos a Finalista cuando tengas evidencia suficiente.</div>` : `<div class="hint" style="margin-top:12px">Terna formada desde la etapa Finalista del pipeline.</div>`}</div>
           <div class="card pad"><h2>Reporte ejecutivo</h2><div class="actions" style="margin-bottom:10px"><button class="btn primary" onclick="generateReport()">Generar reporte</button><button class="btn" onclick="copyReport()">Copiar reporte</button></div><div id="reportText" class="report-box">${escapeHtml(buildReport())}</div></div>
         </div>`;
     }
     function shortlist(){
-      return [...data.candidates].filter(c => c.stage === "Finalista").sort((a,b)=> {
+      return candidatesForActive().filter(c => c.stage === "Finalista").sort((a,b)=> {
         const as = Number(data.scorecards[a.id] ? avg(data.scorecards[a.id]) : 0), bs = Number(data.scorecards[b.id] ? avg(data.scorecards[b.id]) : 0);
         return (bs*20 + matrixTotal(b)) - (as*20 + matrixTotal(a));
       }).slice(0,3);
     }
     function buildReport(){
-      const p = getProcess(), terna = shortlist();
+      const p = getProcess(), terna = shortlist(), current = candidatesForActive(), currentIds = new Set(current.map(c => c.id));
       return `Proceso: ${p.title}
 Estado actual: ${p.status}
-Postulantes recibidos: ${data.candidates.length}
-Candidatos revisados: ${data.candidates.filter(c=>c.stage!=="Nuevo").length}
-Candidatos preseleccionados: ${data.candidates.filter(c=>["Preseleccionado","Entrevista agendada","Entrevistado","Finalista","Oferta","Contratado"].includes(c.stage)).length}
-Candidatos entrevistados: ${Object.keys(data.scorecards).length}
+Postulantes recibidos: ${current.length}
+Candidatos revisados: ${current.filter(c=>c.stage!=="Nuevo").length}
+Candidatos preseleccionados: ${current.filter(c=>["Preseleccionado","Entrevista agendada","Entrevistado","Finalista","Oferta","Contratado"].includes(c.stage)).length}
+Candidatos entrevistados: ${Object.keys(data.scorecards).filter(id => currentIds.has(id)).length}
 
 Finalistas:
 ${terna.length ? terna.map((c,i)=>`${i+1}. ${c.name} - ${c.humanReason} Punto a validar: ${(data.scorecards[c.id]?.validate || "condiciones y evidencia en entrevista final")}.`).join(`
