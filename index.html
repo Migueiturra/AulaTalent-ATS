@@ -197,103 +197,103 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    const stages = ["Nuevo", "Revision CV", "Preseleccionado", "Entrevista agendada", "Entrevistado", "Finalista", "Oferta", "Contratado", "Descartado", "Desiste / No responde"];
+    const stages = ["Nuevo", "Revisión CV", "Preseleccionado", "Entrevista agendada", "Entrevistado", "Finalista", "Oferta", "Contratado", "Descartado", "Desiste / No responde"];
     const navItems = [
-      ["dashboard", "Dashboard", "Vista general del proceso, carga de trabajo y proximos pasos."],
-      ["exercise", "Plan de trabajo", "Checklist operativo del proceso de seleccion."],
-      ["requisitions", "Requisiciones", "Solicitud de contratacion y criterios del cargo."],
-      ["posting", "Publicacion", "Canales, aviso y registro de difusion de la oferta."],
+      ["dashboard", "Dashboard", "Vista general del proceso, carga de trabajo y próximos pasos."],
+      ["exercise", "Plan de trabajo", "Checklist operativo del proceso de selección."],
+      ["requisitions", "Requisiciones", "Solicitud de contratación y criterios del cargo."],
+      ["posting", "Publicación", "Canales, aviso y registro de difusión de la oferta."],
       ["processes", "Proceso / Kanban", "Vacante activa y pipeline de candidatos."],
-      ["candidates", "Candidatos", "Base, fichas, ranking ATS y decision humana."],
-      ["screening", "Filtro curricular", "Matriz de requisitos y recomendacion orientativa."],
+      ["candidates", "Candidatos", "Base, fichas, ranking ATS y decisión humana."],
+      ["screening", "Filtro curricular", "Matriz de requisitos y recomendación orientativa."],
       ["interviews", "Entrevistas", "Agenda, invitaciones y cambio de etapa."],
       ["scorecards", "Scorecards", "Pauta breve de entrevista con evidencia."],
       ["communications", "Comunicaciones", "Plantillas simuladas y cierres respetuosos."],
       ["reports", "Reporte", "Finalistas y reporte ejecutivo para jefatura."],
-      ["settings", "Configuracion", "Roles, etapas, privacidad y trazabilidad."]
+      ["settings", "Configuración", "Roles, etapas, privacidad y trazabilidad."]
     ];
     const criteria = [
-      ["presencial", "Presencial Valparaiso", "binary"],
-      ["expMin", "Experiencia minima", "binary"],
-      ["atencion", "Atencion/administracion", 3],
-      ["reclamos", "Reclamos/casos dificiles", 2],
+      ["presencial", "Presencial Valparaíso", "binary"],
+      ["expMin", "Experiencia mínima", "binary"],
+      ["atencion", "Atención/administración", 3],
+      ["reclamos", "Reclamos/casos difíciles", 2],
       ["crm", "CRM o sistema", 2],
       ["excel", "Excel/herramientas", 2],
       ["claridad", "Claridad CV", 2],
       ["renta", "Renta/disponibilidad", 2]
     ];
     const templates = {
-      received: "Hola [Nombre]:\\n\\nGracias por postular al cargo de [Cargo]. Hemos recibido tu postulacion y revisaremos tus antecedentes.\\n\\nSaludos,\\nEquipo de Seleccion",
-      interview: "Hola [Nombre]:\\n\\nGracias por postular al cargo de [Cargo]. Queremos invitarte a una entrevista para conocer mas sobre tu experiencia y motivacion.\\n\\nFecha: [fecha]\\nHora: [hora]\\nModalidad: [modalidad]\\nEntrevistador/a: [entrevistador]\\n\\nPor favor confirma tu disponibilidad.\\n\\nSaludos,\\nEquipo de Seleccion",
-      reject: "Hola [Nombre]:\\n\\nGracias por participar en el proceso para el cargo de [Cargo].\\n\\nEn esta oportunidad hemos decidido avanzar con otras candidaturas que se ajustan de manera mas directa a los requisitos definidos para esta etapa.\\n\\nAgradecemos tu interes y el tiempo dedicado a postular.\\n\\nSaludos,\\nEquipo de Seleccion",
-      advance: "Hola [Nombre]:\\n\\nQueremos contarte que avanzas a la siguiente etapa del proceso para [Cargo]. Te contactaremos con los proximos pasos.\\n\\nSaludos,\\nEquipo de Seleccion",
-      offer: "Hola [Nombre]:\\n\\nNos gustaria avanzar con una propuesta formal para el cargo de [Cargo]. Compartiremos condiciones y documentacion para tu revision.\\n\\nSaludos,\\nEquipo de Seleccion"
+      received: "Hola [Nombre]:\\n\\nGracias por postular al cargo de [Cargo]. Hemos recibido tu postulación y revisaremos tus antecedentes.\\n\\nSaludos,\\nEquipo de Selección",
+      interview: "Hola [Nombre]:\\n\\nGracias por postular al cargo de [Cargo]. Queremos invitarte a una entrevista para conocer más sobre tu experiencia y motivación.\\n\\nFecha: [fecha]\\nHora: [hora]\\nModalidad: [modalidad]\\nEntrevistador/a: [entrevistador]\\n\\nPor favor confirma tu disponibilidad.\\n\\nSaludos,\\nEquipo de Selección",
+      reject: "Hola [Nombre]:\\n\\nGracias por participar en el proceso para el cargo de [Cargo].\\n\\nEn esta oportunidad hemos decidido avanzar con otras candidaturas que se ajustan de manera más directa a los requisitos definidos para esta etapa.\\n\\nAgradecemos tu interés y el tiempo dedicado a postular.\\n\\nSaludos,\\nEquipo de Selección",
+      advance: "Hola [Nombre]:\\n\\nQueremos contarte que avanzas a la siguiente etapa del proceso para [Cargo]. Te contactaremos con los próximos pasos.\\n\\nSaludos,\\nEquipo de Selección",
+      offer: "Hola [Nombre]:\\n\\nNos gustaría avanzar con una propuesta formal para el cargo de [Cargo]. Compartiremos condiciones y documentación para tu revisión.\\n\\nSaludos,\\nEquipo de Selección"
     };
     const taskDefinitions = [
-      { id:"t1", title:"Requisicion validada", detail:"Crear o revisar la solicitud con datos completos del cargo.", view:"requisitions", action:"Guardar revision" },
+      { id:"t1", title:"Requisición validada", detail:"Crear o revisar la solicitud con datos completos del cargo.", view:"requisitions", action:"Guardar revisión" },
       { id:"t2", title:"Criterios del cargo definidos", detail:"Editar requisitos excluyentes, deseables y competencias.", view:"requisitions", action:"Guardar criterios" },
-      { id:"t3p", title:"Oferta publicada", detail:"Elegir portales, redactar el aviso y registrar la publicacion simulada.", view:"posting", action:"Publicar oferta" },
-      { id:"t3", title:"Postulacion ingresada", detail:"Crear una postulacion ficticia desde el portal candidato.", view:"processes", action:"Enviar postulacion" },
-      { id:"t4", title:"Fichas revisadas", detail:"Abrir candidatos, registrar notas y decision preliminar.", view:"candidates", action:"Guardar ficha" },
-      { id:"t5", title:"Filtro curricular aplicado", detail:"Puntuar candidatos en la matriz y registrar decision humana.", view:"screening", action:"Actualizar matriz" },
+      { id:"t3p", title:"Oferta publicada", detail:"Elegir portales, redactar el aviso y registrar la publicación simulada.", view:"posting", action:"Publicar oferta" },
+      { id:"t3", title:"Postulación ingresada", detail:"Crear una postulación ficticia desde el portal candidato.", view:"processes", action:"Enviar postulación" },
+      { id:"t4", title:"Fichas revisadas", detail:"Abrir candidatos, registrar notas y decisión preliminar.", view:"candidates", action:"Guardar ficha" },
+      { id:"t5", title:"Filtro curricular aplicado", detail:"Puntuar candidatos en la matriz y registrar decisión humana.", view:"screening", action:"Actualizar matriz" },
       { id:"t6", title:"Pipeline actualizado", detail:"Mover candidatos entre etapas del proceso.", view:"processes", action:"Mover candidato" },
-      { id:"t7", title:"Entrevista agendada", detail:"Registrar entrevista y generar invitacion.", view:"interviews", action:"Agendar entrevista" },
-      { id:"t8", title:"Scorecard registrada", detail:"Guardar evaluacion de entrevista con evidencia.", view:"scorecards", action:"Guardar scorecard" },
-      { id:"t9", title:"Comunicacion de cierre registrada", detail:"Registrar mensaje para un candidato descartado.", view:"communications", action:"Registrar cierre" },
-      { id:"t10", title:"Ranking revisado criticamente", detail:"Comparar score ATS con evidencia y decision humana.", view:"candidates", action:"Registrar analisis" },
+      { id:"t7", title:"Entrevista agendada", detail:"Registrar entrevista y generar invitación.", view:"interviews", action:"Agendar entrevista" },
+      { id:"t8", title:"Scorecard registrada", detail:"Guardar evaluación de entrevista con evidencia.", view:"scorecards", action:"Guardar scorecard" },
+      { id:"t9", title:"Comunicación de cierre registrada", detail:"Registrar mensaje para un candidato descartado.", view:"communications", action:"Registrar cierre" },
+      { id:"t10", title:"Ranking revisado críticamente", detail:"Comparar score ATS con evidencia y decisión humana.", view:"candidates", action:"Registrar análisis" },
       { id:"t11", title:"Finalistas definidos", detail:"Mover tres candidatos a la etapa Finalista.", view:"processes", action:"Mover a Finalista" },
-      { id:"t12", title:"Reporte ejecutivo generado", detail:"Generar reporte para jefatura con finalistas, riesgos y proximos pasos.", view:"reports", action:"Generar reporte" }
+      { id:"t12", title:"Reporte ejecutivo generado", detail:"Generar reporte para jefatura con finalistas, riesgos y próximos pasos.", view:"reports", action:"Generar reporte" }
     ];
     function emptyTaskStatus(){ return Object.fromEntries(taskDefinitions.map(t => [t.id, { done:false, at:"" }])); }
     const seed = {
       activeProcess: "p1",
       caseTitle: "De 12 postulantes a una terna defendible",
       requisitions: [{
-        id: "r1", title: "Asistente de Atencion y Gestion Administrativa", area: "Atencion de Usuarios",
-        manager: "Coordinacion de Atencion de Usuarios", reason: "Refuerzo operativo por aumento de casos",
-        vacancies: 1, mode: "Presencial", city: "Valparaiso", schedule: "Jornada completa",
-        contract: "Plazo fijo inicial con posibilidad de continuidad", salary: "$780.000 - $950.000 liquido",
+        id: "r1", title: "Asistente de Atención y Gestión Administrativa", area: "Atención de Usuarios",
+        manager: "Coordinación de Atención de Usuarios", reason: "Refuerzo operativo por aumento de casos",
+        vacancies: 1, mode: "Presencial", city: "Valparaíso", schedule: "Jornada completa",
+        contract: "Plazo fijo inicial con posibilidad de continuidad", salary: "$780.000 - $950.000 líquido",
         startDate: "2026-08-01", urgency: "Alta", status: "Aprobada"
       }],
       processes: [{
-        id: "p1", requisition: "r1", title: "Asistente de Atencion y Gestion Administrativa", status: "Terna en construccion",
-        responsible: "Equipo de seleccion", sources: ["Portal corporativo", "LinkedIn", "Laborum", "Computrabajo", "Referido", "Carga manual"],
-        description: "Atencion de usuarios, apoyo administrativo, gestion de reclamos, registro de informacion en sistemas y seguimiento de casos.",
+        id: "p1", requisition: "r1", title: "Asistente de Atención y Gestión Administrativa", status: "Terna en construcción",
+        responsible: "Equipo de selección", sources: ["Portal corporativo", "LinkedIn", "Laborum", "Computrabajo", "Referido", "Carga manual"],
+        description: "Atención de usuarios, apoyo administrativo, gestión de reclamos, registro de información en sistemas y seguimiento de casos.",
         functions: "Recibir solicitudes, orientar usuarios, registrar casos, hacer seguimiento, preparar reportes simples y escalar situaciones complejas.",
-        must: ["Disponibilidad presencial en Valparaiso", "1 ano de experiencia en atencion de usuarios o funciones administrativas", "Manejo basico de herramientas digitales"],
-        nice: ["Gestion de reclamos", "CRM, ERP o sistema de registro", "Excel basico/intermedio", "Experiencia en atencion masiva"],
-        competencies: ["Comunicacion clara", "Orden y seguimiento", "Manejo de situaciones dificiles", "Orientacion al usuario"],
-        questions: ["Disponibilidad presencial en Valparaiso", "Anos de experiencia", "Gestion de reclamos", "Uso de CRM/ERP", "Pretension de renta", "Caso de usuario dificil"]
+        must: ["Disponibilidad presencial en Valparaíso", "1 año de experiencia en atención de usuarios o funciones administrativas", "Manejo básico de herramientas digitales"],
+        nice: ["Gestión de reclamos", "CRM, ERP o sistema de registro", "Excel básico/intermedio", "Experiencia en atención masiva"],
+        competencies: ["Comunicación clara", "Orden y seguimiento", "Manejo de situaciones difíciles", "Orientación al usuario"],
+        questions: ["Disponibilidad presencial en Valparaíso", "Años de experiencia", "Gestión de reclamos", "Uso de CRM/ERP", "Pretensión de renta", "Caso de usuario difícil"]
       }],
       publications: [],
       candidates: [
-        cand("c1","Camila Rojas","Portal corporativo","Nuevo",92,4,"Valparaiso",820000,["prioritario","reclamos","CRM"],[], "Experiencia en atencion presencial, gestion de reclamos y uso de CRM en servicios.", "Si","4 anos","Si, casos de alta molestia","CRM Salesforce","Relata contencion y seguimiento con cierre informado.", {presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:1,claridad:2,renta:2}, "Avanzar", "Cumple excluyentes y aporta experiencia directa en reclamos."),
-        cand("c2","Diego Morales","Referido","Revision CV",78,3,"Valparaiso",900000,["Excel","administrativo"],[], "Administrativo interno con control documental, Excel y apoyo a clientes internos.", "Si","3 anos","Algunos reclamos internos","ERP interno","Describe orden, registro y derivacion.", {presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:2,claridad:2,renta:2}, "Revisar", "Buen orden administrativo; validar trato con usuarios externos."),
-        cand("c3","Fernanda Perez","Laborum","Revision CV",64,5,"Valparaiso",760000,["call center","potencial"],["CV desordenado"], "Call center y reclamos. CV poco claro, pero respuestas muestran experiencia relevante.", "Si","5 anos","Si, diariamente","Sistema de tickets","Explica escucha, registro y escalamiento.", {presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:1,claridad:0,renta:2}, "Avanzar", "El score castiga presentacion del CV, pero hay evidencia fuerte en reclamos."),
-        cand("c4","Luis Araya","Computrabajo","Nuevo",58,0.5,"Valparaiso",700000,["formacion pertinente"],["experiencia insuficiente"], "Tecnico en administracion recien egresado con practica breve en oficina.", "Si","6 meses","No","Excel basico","Describe apoyo administrativo simple.", {presencial:1,expMin:0,atencion:1,reclamos:0,crm:0,excel:1,claridad:2,renta:2}, "Descartar", "No cumple experiencia minima; podria quedar para base futura."),
-        cand("c5","Natalia Soto","LinkedIn","Preseleccionado",85,6,"Vina del Mar",920000,["postventa","atencion masiva"],[], "Retail, postventa, cambios, reclamos y atencion masiva. Buen ajuste a condiciones.", "Si","6 anos","Si, postventa y reclamos","Sistema POS/ERP","Explica manejo de clientes molestos y seguimiento.", {presencial:1,expMin:1,atencion:3,reclamos:2,crm:1,excel:1,claridad:2,renta:2}, "Avanzar", "Muy buen calce en atencion masiva; validar registro digital."),
-        cand("c6","Javier Contreras","LinkedIn","Descartado",88,4,"Santiago",980000,["digital","CRM"],["sin disponibilidad presencial"], "Buen perfil digital y CRM, pero declara que solo puede trabajar remoto.", "No","4 anos","Si","HubSpot","Buen manejo de herramientas, baja disponibilidad presencial.", {presencial:0,expMin:1,atencion:2,reclamos:1,crm:2,excel:2,claridad:2,renta:1}, "Descartar", "Alto score automatico, pero no cumple requisito excluyente de presencialidad."),
-        cand("c7","Paula Herrera","Carga manual","Preseleccionado",81,8,"Valparaiso",850000,["secretaria","orden documental"],[], "Secretaria con coordinacion, archivo, agenda y atencion presencial.", "Si","8 anos","Ocasionalmente","Sistema documental","Describe seguimiento ordenado y trato cordial.", {presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:2,claridad:2,renta:2}, "Avanzar", "Fuerte orden y continuidad; validar manejo de reclamos complejos."),
-        cand("c8","Matias Vega","Portal corporativo","Preseleccionado",90,4,"Valparaiso",930000,["CRM","reportes","prioritario"],[], "Atencion, CRM, reportes semanales y seguimiento de casos en institucion de servicios.", "Si","4 anos","Si","CRM y Excel","Ejemplo claro con registro, contacto y cierre.", {presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:2,claridad:2,renta:1}, "Avanzar", "Completo en atencion, sistemas y reportes; revisar renta final."),
-        cand("c9","Rocio Fuentes","Referido","Revision CV",52,7,"Valparaiso",800000,["habilidades transferibles"],["sin experiencia ATS tipica"], "Reconvertion desde educacion. Alta comunicacion y seguimiento de apoderados, poca experiencia administrativa formal.", "Si","7 anos en educacion","Si, familias y reclamos","Plataforma educativa","Relata contencion y seguimiento de casos sensibles.", {presencial:1,expMin:1,atencion:2,reclamos:2,crm:1,excel:1,claridad:2,renta:2}, "Revisar", "Bajo score por trayectoria no tradicional; posible potencial por habilidades transferibles."),
-        cand("c10","Andres Leiva","Computrabajo","Revision CV",89,2,"Valparaiso",940000,["muchas palabras clave"],["poca evidencia"], "CV con muchas palabras clave: CRM, reclamos, Excel, usuario. Pocos ejemplos concretos.", "Si","2 anos","Dice que si, sin detalle","CRM no especificado","Respuesta generica y poco verificable.", {presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:1,claridad:1,renta:1}, "Revisar", "Alto score por keywords; requiere revision humana y evidencia."),
-        cand("c11","Mariana Torres","Laborum","Nuevo",73,2,"Quilpue",780000,["salud","registro"],[], "Admision en centro de salud, atencion presencial, agenda y registro de pacientes.", "Si","2 anos","Si, pacientes molestos","Sistema de agenda","Buen ejemplo de escucha y derivacion.", {presencial:1,expMin:1,atencion:3,reclamos:1,crm:1,excel:1,claridad:2,renta:2}, "Avanzar", "Buen contexto de usuarios sensibles; validar presion y volumen."),
-        cand("c12","Sebastian Rivas","Portal corporativo","Desiste / No responde",61,3,"Valparaiso",1050000,["administrativo"],["renta alta","no responde"], "Administrativo de bodega con registros y planillas; poca atencion directa.", "Si","3 anos","No","Excel","Respuesta breve; no contesta seguimiento.", {presencial:1,expMin:1,atencion:1,reclamos:0,crm:0,excel:2,claridad:1,renta:0}, "Descartar", "No responde y renta fuera de rango para la etapa.")
+        cand("c1","Camila Rojas","Portal corporativo","Nuevo",92,4,"Valparaíso",820000,["prioritario","reclamos","CRM"],[], "Experiencia en atención presencial, gestión de reclamos y uso de CRM en servicios.", "Sí","4 años","Sí, casos de alta molestia","CRM Salesforce","Relata contención y seguimiento con cierre informado.", {presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:1,claridad:2,renta:2}, "Avanzar", "Cumple excluyentes y aporta experiencia directa en reclamos."),
+        cand("c2","Diego Morales","Referido","Revisión CV",78,3,"Valparaíso",900000,["Excel","administrativo"],[], "Administrativo interno con control documental, Excel y apoyo a clientes internos.", "Sí","3 años","Algunos reclamos internos","ERP interno","Describe orden, registro y derivación.", {presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:2,claridad:2,renta:2}, "Revisar", "Buen orden administrativo; validar trato con usuarios externos."),
+        cand("c3","Fernanda Pérez","Laborum","Revisión CV",64,5,"Valparaíso",760000,["call center","potencial"],["CV desordenado"], "Call center y reclamos. CV poco claro, pero respuestas muestran experiencia relevante.", "Sí","5 años","Sí, diariamente","Sistema de tickets","Explica escucha, registro y escalamiento.", {presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:1,claridad:0,renta:2}, "Avanzar", "El score castiga presentación del CV, pero hay evidencia fuerte en reclamos."),
+        cand("c4","Luis Araya","Computrabajo","Nuevo",58,0.5,"Valparaíso",700000,["formación pertinente"],["experiencia insuficiente"], "Técnico en administración recién egresado con práctica breve en oficina.", "Sí","6 meses","No","Excel básico","Describe apoyo administrativo simple.", {presencial:1,expMin:0,atencion:1,reclamos:0,crm:0,excel:1,claridad:2,renta:2}, "Descartar", "No cumple experiencia mínima; podría quedar para base futura."),
+        cand("c5","Natalia Soto","LinkedIn","Preseleccionado",85,6,"Viña del Mar",920000,["postventa","atención masiva"],[], "Retail, postventa, cambios, reclamos y atención masiva. Buen ajuste a condiciones.", "Sí","6 años","Sí, postventa y reclamos","Sistema POS/ERP","Explica manejo de clientes molestos y seguimiento.", {presencial:1,expMin:1,atencion:3,reclamos:2,crm:1,excel:1,claridad:2,renta:2}, "Avanzar", "Muy buen calce en atención masiva; validar registro digital."),
+        cand("c6","Javier Contreras","LinkedIn","Descartado",88,4,"Santiago",980000,["digital","CRM"],["sin disponibilidad presencial"], "Buen perfil digital y CRM, pero declara que solo puede trabajar remoto.", "No","4 años","Sí","HubSpot","Buen manejo de herramientas, baja disponibilidad presencial.", {presencial:0,expMin:1,atencion:2,reclamos:1,crm:2,excel:2,claridad:2,renta:1}, "Descartar", "Alto score automático, pero no cumple requisito excluyente de presencialidad."),
+        cand("c7","Paula Herrera","Carga manual","Preseleccionado",81,8,"Valparaíso",850000,["secretaria","orden documental"],[], "Secretaria con coordinación, archivo, agenda y atención presencial.", "Sí","8 años","Ocasionalmente","Sistema documental","Describe seguimiento ordenado y trato cordial.", {presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:2,claridad:2,renta:2}, "Avanzar", "Fuerte orden y continuidad; validar manejo de reclamos complejos."),
+        cand("c8","Matías Vega","Portal corporativo","Preseleccionado",90,4,"Valparaíso",930000,["CRM","reportes","prioritario"],[], "Atención, CRM, reportes semanales y seguimiento de casos en institución de servicios.", "Sí","4 años","Sí","CRM y Excel","Ejemplo claro con registro, contacto y cierre.", {presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:2,claridad:2,renta:1}, "Avanzar", "Completo en atención, sistemas y reportes; revisar renta final."),
+        cand("c9","Rocío Fuentes","Referido","Revisión CV",52,7,"Valparaíso",800000,["habilidades transferibles"],["sin experiencia ATS típica"], "Reconversión desde educación. Alta comunicación y seguimiento de apoderados, poca experiencia administrativa formal.", "Sí","7 años en educación","Sí, familias y reclamos","Plataforma educativa","Relata contención y seguimiento de casos sensibles.", {presencial:1,expMin:1,atencion:2,reclamos:2,crm:1,excel:1,claridad:2,renta:2}, "Revisar", "Bajo score por trayectoria no tradicional; posible potencial por habilidades transferibles."),
+        cand("c10","Andrés Leiva","Computrabajo","Revisión CV",89,2,"Valparaíso",940000,["muchas palabras clave"],["poca evidencia"], "CV con muchas palabras clave: CRM, reclamos, Excel, usuario. Pocos ejemplos concretos.", "Sí","2 años","Dice que sí, sin detalle","CRM no especificado","Respuesta genérica y poco verificable.", {presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:1,claridad:1,renta:1}, "Revisar", "Alto score por keywords; requiere revisión humana y evidencia."),
+        cand("c11","Mariana Torres","Laborum","Nuevo",73,2,"Quilpué",780000,["salud","registro"],[], "Admisión en centro de salud, atención presencial, agenda y registro de pacientes.", "Sí","2 años","Sí, pacientes molestos","Sistema de agenda","Buen ejemplo de escucha y derivación.", {presencial:1,expMin:1,atencion:3,reclamos:1,crm:1,excel:1,claridad:2,renta:2}, "Avanzar", "Buen contexto de usuarios sensibles; validar presión y volumen."),
+        cand("c12","Sebastián Rivas","Portal corporativo","Desiste / No responde",61,3,"Valparaíso",1050000,["administrativo"],["renta alta","no responde"], "Administrativo de bodega con registros y planillas; poca atención directa.", "Sí","3 años","No","Excel","Respuesta breve; no contesta seguimiento.", {presencial:1,expMin:1,atencion:1,reclamos:0,crm:0,excel:2,claridad:1,renta:0}, "Descartar", "No responde y renta fuera de rango para la etapa.")
       ],
       interviews: [{ id:"i1", candidate:"c8", date:"2026-07-10", time:"10:30", mode:"Presencial", interviewer:"Jefatura solicitante", notes:"Validar renta y manejo de reportes.", message:"" }],
       scorecards: {
-        c8: { comunicacion:5, experiencia:5, motivacion:4, dificil:4, orden:5, condiciones:4, comment:"Respuestas claras, buen manejo de CRM y seguimiento.", recommendation:"Avanzar", date:"2026-07-05", validate:"Pretension de renta" },
-        c5: { comunicacion:4, experiencia:5, motivacion:4, dificil:5, orden:4, condiciones:5, comment:"Experiencia solida en postventa y usuarios molestos.", recommendation:"Avanzar", date:"2026-07-05", validate:"Manejo de sistema de registro" }
+        c8: { comunicacion:5, experiencia:5, motivacion:4, dificil:4, orden:5, condiciones:4, comment:"Respuestas claras, buen manejo de CRM y seguimiento.", recommendation:"Avanzar", date:"2026-07-05", validate:"Pretensión de renta" },
+        c5: { comunicacion:4, experiencia:5, motivacion:4, dificil:5, orden:4, condiciones:5, comment:"Experiencia sólida en postventa y usuarios molestos.", recommendation:"Avanzar", date:"2026-07-05", validate:"Manejo de sistema de registro" }
       },
       communications: [],
       audit: [
-        log("Proceso de seleccion cargado con 12 postulantes ficticios", "Sistema"),
+        log("Proceso de selección cargado con 12 postulantes ficticios", "Sistema"),
         log("Candidatos precargados distribuidos en pipeline inicial", "Sistema"),
         log("Javier Contreras descartado por requisito excluyente", "Sistema")
       ],
       exerciseNotes: {
-        criteria: "Excluyentes: presencial Valparaiso, 1 ano de experiencia, herramientas digitales. Deseables: reclamos, CRM/ERP, Excel, atencion masiva.",
-        bias: "No usar edad, genero, domicilio exacto, universidad o intuiciones no relacionadas con el cargo. Revisar candidatos con score alto por keywords y candidatos con score bajo por trayectoria no tradicional.",
+        criteria: "Excluyentes: presencial Valparaíso, 1 año de experiencia, herramientas digitales. Deseables: reclamos, CRM/ERP, Excel, atención masiva.",
+        bias: "No usar edad, género, domicilio exacto, universidad o intuiciones no relacionadas con el cargo. Revisar candidatos con score alto por keywords y candidatos con score bajo por trayectoria no tradicional.",
         finalReflection: ""
       },
       taskStatus: emptyTaskStatus()
@@ -335,7 +335,7 @@
     }
     function save(){ localStorage.setItem("aulaTalentATS", JSON.stringify(data)); }
     function resetDemo(){ localStorage.removeItem("aulaTalentATS"); data = structuredClone(seed); save(); render(); toast("Demo reiniciada con datos iniciales del proceso."); }
-    function resetBlank(){ localStorage.removeItem("aulaTalentATS"); data = blankExerciseData(); save(); render(); toast("Modo desde cero iniciado. Completa la requisicion y criterios antes de avanzar."); }
+    function resetBlank(){ localStorage.removeItem("aulaTalentATS"); data = blankExerciseData(); save(); render(); toast("Modo desde cero iniciado. Completa la requisición y criterios antes de avanzar."); }
     function money(n){ return new Intl.NumberFormat("es-CL", {style:"currency", currency:"CLP", maximumFractionDigits:0}).format(n); }
     function role(){ return document.getElementById("role").value; }
     function canEdit(){ return !["Candidato","Observador docente"].includes(role()); }
@@ -389,10 +389,10 @@
     function renderDashboard(){
       const c = data.candidates.filter(x => x.process === data.activeProcess), reviewed = c.filter(x => x.stage !== "Nuevo").length, pre = c.filter(x => ["Preseleccionado","Entrevista agendada","Entrevistado","Finalista","Oferta","Contratado"].includes(x.stage)).length;
       document.getElementById("dashboard").innerHTML = `
-        ${processToolbar("Indicadores calculados solo con la requisicion seleccionada.")}
+        ${processToolbar("Indicadores calculados solo con la requisición seleccionada.")}
         <div class="grid stats">
           ${metric("Postulantes", c.length, "Recibidos en el proceso")}
-          ${metric("Revisados", reviewed, "Con etapa o decision")}
+          ${metric("Revisados", reviewed, "Con etapa o decisión")}
           ${metric("Preseleccionados", pre, "Avanzan en el flujo")}
           ${metric("Finalistas", c.filter(x=>x.stage==="Finalista").length, "Objetivo: 3 perfiles")}
         </div>
@@ -400,7 +400,7 @@
           <div class="card pad">
             <h2>${getProcess().title}</h2>
             <p>${getProcess().description}</p>
-            <div class="hint warning">El score ATS prioriza informacion, pero la decision debe quedar respaldada por criterios, evidencia y notas del equipo.</div>
+            <div class="hint warning">El score ATS prioriza información, pero la decisión debe quedar respaldada por criterios, evidencia y notas del equipo.</div>
             <h3 style="margin-top:14px">Embudo actual</h3>${bars(stageCounts())}
           </div>
           <div class="card pad">
@@ -410,11 +410,11 @@
           </div>
         </div>
         <div class="card pad" style="margin-top:14px">
-          <h2>Acciones rapidas</h2>
+          <h2>Acciones rápidas</h2>
           <div class="actions">
             <button class="btn" onclick="setView('requisitions')">Gestionar requisiciones</button>
             <button class="btn" onclick="setView('processes')">Abrir pipeline</button>
-            <button class="btn" onclick="openPortal()">Ingresar postulacion</button>
+            <button class="btn" onclick="openPortal()">Ingresar postulación</button>
             <button class="btn primary" onclick="generateDemoCandidates()">Generar postulantes ficticios</button>
           </div>
         </div>`;
@@ -442,14 +442,14 @@
         <div class="grid two">
           <div class="card pad">
             <h2>Plan de trabajo del proceso</h2>
-            <p>Usa este checklist como control de avance. El trabajo real ocurre en los modulos del ATS: requisiciones, pipeline, fichas, filtro curricular, entrevistas y reporte.</p>
+            <p>Usa este checklist como control de avance. El trabajo real ocurre en los módulos del ATS: requisiciones, pipeline, fichas, filtro curricular, entrevistas y reporte.</p>
             <div class="task-list">${taskDefinitions.map((t,i)=>taskItem(t,i)).join("")}</div>
           </div>
           <div class="card pad">
             <h2>Notas del grupo</h2>
             <div class="form">
               <label><span>Criterios acordados</span><textarea id="criteriaNotes">${escapeHtml(data.exerciseNotes.criteria)}</textarea></label>
-              <label><span>Analisis de sesgos y limites del ATS</span><textarea id="biasNotes">${escapeHtml(data.exerciseNotes.bias)}</textarea></label>
+              <label><span>Análisis de sesgos y límites del ATS</span><textarea id="biasNotes">${escapeHtml(data.exerciseNotes.bias)}</textarea></label>
               <label><span>Reflexion final</span><textarea id="reflectionNotes">${escapeHtml(data.exerciseNotes.finalReflection)}</textarea></label>
               <button class="btn primary" onclick="saveExerciseNotes()">Guardar notas del ejercicio</button>
             </div>
@@ -467,12 +467,12 @@
       const p = getProcess();
       document.getElementById("requisitions").innerHTML = `
         <div class="toolbar filters" style="margin-bottom:14px">
-          <button class="btn primary" onclick="openReqForm()">Nueva requisicion</button>
+          <button class="btn primary" onclick="openReqForm()">Nueva requisición</button>
         </div>
         <div class="grid two">
           <div class="card pad">
             <h2>Requisiciones</h2>
-            <table><thead><tr><th>Cargo</th><th>Area</th><th>Ubicacion</th><th>Urgencia</th><th>Estado</th><th></th></tr></thead>
+            <table><thead><tr><th>Cargo</th><th>Area</th><th>Ubicación</th><th>Urgencia</th><th>Estado</th><th></th></tr></thead>
               <tbody>${data.requisitions.length ? data.requisitions.map(r=>`<tr><td><b>${escapeHtml(r.title)}</b><br><span class="small">${escapeHtml(r.reason)}</span></td><td>${escapeHtml(r.area)}</td><td>${escapeHtml(r.city)}<br><span class="small">${escapeHtml(r.mode)}</span></td><td>${escapeHtml(r.urgency)}</td><td>${pill(r.status, r.status==="Aprobada"?"green":r.status==="Pendiente"?"amber":"red")}</td><td><button class="btn small" onclick="openReqForm('${r.id}')">Editar</button></td></tr>`).join("") : `<tr><td colspan="6"><span class="small">No hay requisiciones registradas. Crea una para iniciar el proceso.</span></td></tr>`}</tbody></table>
           </div>
           <div class="card pad">
@@ -480,7 +480,7 @@
             ${listBlock("Requisitos excluyentes", p.must, "red")}
             ${listBlock("Requisitos deseables", p.nice, "amber")}
             ${listBlock("Competencias a evaluar", p.competencies, "cyan")}
-            <div class="hint" style="margin-top:12px">Edita la requisicion activa para actualizar estos criterios junto con los datos del cargo.</div>
+            <div class="hint" style="margin-top:12px">Edita la requisición activa para actualizar estos criterios junto con los datos del cargo.</div>
           </div>
         </div>`;
     }
@@ -503,30 +503,30 @@
     function openReqForm(id=""){
       const p = getProcess();
       const r = id ? data.requisitions.find(item => item.id === id) : null;
-      openModal(r ? "Editar requisicion" : "Nueva requisicion", `<div class="form two-col">
-        <label><span>Cargo</span><input id="reqTitle" value="${escapeHtml(r?.title || "")}" placeholder="Ej.: Asistente de Atencion y Gestion Administrativa"></label>
-        <label><span>Area solicitante</span><input id="reqArea" value="${escapeHtml(r?.area || "")}" placeholder="Ej.: Atencion de Usuarios"></label>
+      openModal(r ? "Editar requisición" : "Nueva requisición", `<div class="form two-col">
+        <label><span>Cargo</span><input id="reqTitle" value="${escapeHtml(r?.title || "")}" placeholder="Ej.: Asistente de Atención y Gestión Administrativa"></label>
+        <label><span>Area solicitante</span><input id="reqArea" value="${escapeHtml(r?.area || "")}" placeholder="Ej.: Atención de Usuarios"></label>
         <label><span>Jefatura solicitante</span><input id="reqManager" value="${escapeHtml(r?.manager || "")}" placeholder="Nombre o rol solicitante"></label>
         <label><span>Motivo de vacante</span><input id="reqReason" value="${escapeHtml(r?.reason || "")}" placeholder="Reemplazo, aumento de dotacion, proyecto..."></label>
         <label><span>Vacantes</span><input id="reqVacancies" type="number" min="1" value="${escapeHtml(r?.vacancies || "")}" placeholder="1"></label>
-        <label><span>Modalidad</span><select id="reqMode">${["Presencial","Hibrida","Remota"].map(x=>`<option ${x===(r?.mode || "Presencial")?"selected":""}>${x}</option>`).join("")}</select></label>
-        <label><span>Ubicacion</span><input id="reqCity" value="${escapeHtml(r?.city || "")}" placeholder="Ciudad o region"></label>
+        <label><span>Modalidad</span><select id="reqMode">${["Presencial","Híbrida","Remota"].map(x=>`<option ${x===(r?.mode || "Presencial")?"selected":""}>${x}</option>`).join("")}</select></label>
+        <label><span>Ubicación</span><input id="reqCity" value="${escapeHtml(r?.city || "")}" placeholder="Ciudad o region"></label>
         <label><span>Jornada</span><input id="reqSchedule" value="${escapeHtml(r?.schedule || "")}" placeholder="Completa, parcial, turnos..."></label>
         <label><span>Contrato</span><input id="reqContract" value="${escapeHtml(r?.contract || "")}" placeholder="Indefinido, plazo fijo, reemplazo..."></label>
         <label><span>Renta referencial</span><input id="reqSalary" value="${escapeHtml(r?.salary || "")}" placeholder="Rango o por definir"></label>
         <label><span>Ingreso esperado</span><input id="reqStart" type="date" value="${escapeHtml(r?.startDate || "")}"></label>
         <label><span>Urgencia</span><select id="reqUrgency">${["Alta","Media","Baja"].map(x=>`<option ${x===(r?.urgency || "Alta")?"selected":""}>${x}</option>`).join("")}</select></label>
         <label><span>Estado</span><select id="reqStatus">${["Aprobada","Pendiente","Rechazada"].map(x=>`<option ${x===(r?.status || "Aprobada")?"selected":""}>${x}</option>`).join("")}</select></label>
-        <label style="grid-column:1/-1"><span>Descripcion del cargo</span><textarea id="reqDescription" placeholder="Objetivo general del cargo y contexto del proceso.">${escapeHtml(p.description || "")}</textarea></label>
+        <label style="grid-column:1/-1"><span>Descripción del cargo</span><textarea id="reqDescription" placeholder="Objetivo general del cargo y contexto del proceso.">${escapeHtml(p.description || "")}</textarea></label>
         <label style="grid-column:1/-1"><span>Funciones principales</span><textarea id="reqFunctions" placeholder="Una funcion por linea o parrafo.">${escapeHtml(p.functions || "")}</textarea></label>
         <label style="grid-column:1/-1"><span>Requisitos excluyentes</span><textarea id="mustCriteria" placeholder="Un requisito por linea.">${escapeHtml(p.must.join("\n"))}</textarea></label>
         <label style="grid-column:1/-1"><span>Requisitos deseables</span><textarea id="niceCriteria" placeholder="Un requisito por linea.">${escapeHtml(p.nice.join("\n"))}</textarea></label>
         <label style="grid-column:1/-1"><span>Competencias a evaluar</span><textarea id="competencyCriteria" placeholder="Una competencia por linea.">${escapeHtml(p.competencies.join("\n"))}</textarea></label>
-        <button class="btn primary" onclick="saveRequisition('${id}')">Guardar requisicion y criterios</button>
+        <button class="btn primary" onclick="saveRequisition('${id}')">Guardar requisición y criterios</button>
       </div>`);
     }
     function saveRequisition(id=""){
-      if (!requiredValues(["reqTitle","reqArea","reqManager","reqReason","reqVacancies","reqCity","reqSchedule","reqContract","reqSalary","reqStart","reqDescription","reqFunctions","mustCriteria","niceCriteria","competencyCriteria"], "todos los campos de la requisicion y criterios")) return;
+      if (!requiredValues(["reqTitle","reqArea","reqManager","reqReason","reqVacancies","reqCity","reqSchedule","reqContract","reqSalary","reqStart","reqDescription","reqFunctions","mustCriteria","niceCriteria","competencyCriteria"], "todos los campos de la requisición y criterios")) return;
       const item = { id:"r"+Date.now(), title:val("reqTitle"), area:val("reqArea"), manager:val("reqManager"), reason:val("reqReason"), vacancies:Number(val("reqVacancies")), mode:val("reqMode"), city:val("reqCity"), schedule:val("reqSchedule"), contract:val("reqContract"), salary:val("reqSalary"), startDate:val("reqStart"), urgency:val("reqUrgency"), status:val("reqStatus") };
       if (id) {
         const index = data.requisitions.findIndex(r => r.id === id);
@@ -537,7 +537,7 @@
       }
       let p = data.processes.find(proc => proc.requisition === item.id);
       if (!p) {
-        p = { id:"p"+Date.now(), requisition:item.id, title:item.title, status:"Levantamiento de perfil", responsible:"Equipo de seleccion", sources:["Portal corporativo","LinkedIn","Laborum","Computrabajo","Referido","Carga manual"], description:"", functions:"", must:[], nice:[], competencies:[], questions:getProcess().questions || [] };
+        p = { id:"p"+Date.now(), requisition:item.id, title:item.title, status:"Levantamiento de perfil", responsible:"Equipo de selección", sources:["Portal corporativo","LinkedIn","Laborum","Computrabajo","Referido","Carga manual"], description:"", functions:"", must:[], nice:[], competencies:[], questions:getProcess().questions || [] };
         data.processes.unshift(p);
       }
       data.activeProcess = p.id;
@@ -551,8 +551,8 @@
       data.exerciseNotes.criteria = `Excluyentes: ${p.must.join("; ")}. Deseables: ${p.nice.join("; ")}. Competencias: ${p.competencies.join("; ")}.`;
       completeTask("t1");
       completeTask("t2");
-      data.audit.unshift(log(`${id ? "Requisicion editada" : "Requisicion creada"}: ${val("reqTitle")}`, role()));
-      save(); closeModal(); render(); toast("Requisicion y criterios guardados.");
+      data.audit.unshift(log(`${id ? "Requisición editada" : "Requisición creada"}: ${val("reqTitle")}`, role()));
+      save(); closeModal(); render(); toast("Requisición y criterios guardados.");
     }
 
     const publicationChannels = ["Portal corporativo", "LinkedIn", "Laborum", "Computrabajo", "Indeed", "Redes sociales", "Referidos internos", "OMIL / bolsa local", "Institucion educativa", "Carga manual"];
@@ -560,40 +560,40 @@
     function hasActivePublication(){ return publicationsForActive().length > 0; }
     function defaultPostingText(){
       const p = getProcess();
-      return `Cargo: ${p.title}\n\nObjetivo del cargo:\n${p.description || "Describe el objetivo del cargo y el contexto de la vacante."}\n\nFunciones principales:\n${p.functions || "Indica las funciones principales."}\n\nRequisitos excluyentes:\n${p.must.map(x => "- " + x).join("\n") || "- Completar requisitos excluyentes."}\n\nRequisitos deseables:\n${p.nice.map(x => "- " + x).join("\n") || "- Completar requisitos deseables."}\n\nCondiciones:\nModalidad, ubicacion, jornada y renta referencial segun requisicion aprobada.`;
+      return `Cargo: ${p.title}\n\nObjetivo del cargo:\n${p.description || "Describe el objetivo del cargo y el contexto de la vacante."}\n\nFunciones principales:\n${p.functions || "Indica las funciones principales."}\n\nRequisitos excluyentes:\n${p.must.map(x => "- " + x).join("\n") || "- Completar requisitos excluyentes."}\n\nRequisitos deseables:\n${p.nice.map(x => "- " + x).join("\n") || "- Completar requisitos deseables."}\n\nCondiciones:\nModalidad, ubicación, jornada y renta referencial según requisición aprobada.`;
     }
     function renderPosting(){
       const p = getProcess();
       const items = publicationsForActive();
       const selected = new Set(p.sources || []);
       document.getElementById("posting").innerHTML = `
-        ${processToolbar("La publicacion define donde se difundira la oferta antes de recibir postulaciones.")}
+        ${processToolbar("La publicación define dónde se difundirá la oferta antes de recibir postulaciones.")}
         <div class="grid two">
           <div class="card pad">
             <h2>Publicar oferta simulada</h2>
             <div class="form">
-              <label><span>Titulo visible del aviso</span><input id="postTitle" value="${escapeHtml(p.title)}" placeholder="Ej.: Asistente de Atencion y Gestion Administrativa"></label>
-              <label><span>Responsable de publicacion</span><input id="postOwner" value="${escapeHtml(p.responsible || "Equipo de seleccion")}" placeholder="Nombre o rol responsable"></label>
+              <label><span>Titulo visible del aviso</span><input id="postTitle" value="${escapeHtml(p.title)}" placeholder="Ej.: Asistente de Atención y Gestión Administrativa"></label>
+              <label><span>Responsable de publicación</span><input id="postOwner" value="${escapeHtml(p.responsible || "Equipo de selección")}" placeholder="Nombre o rol responsable"></label>
               <label><span>Fecha de cierre</span><input id="postClose" type="date"></label>
               <label style="grid-column:1/-1"><span>Portales y fuentes</span><div class="card pad" style="box-shadow:none">${publicationChannels.map(ch=>`<label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" class="postChannel" value="${escapeHtml(ch)}" ${selected.has(ch) ? "checked" : ""} style="width:auto;min-height:auto"> ${escapeHtml(ch)}</label>`).join("")}</div></label>
               <label style="grid-column:1/-1"><span>Texto del aviso</span><textarea id="postBody" style="min-height:260px">${escapeHtml(defaultPostingText())}</textarea></label>
               <label style="grid-column:1/-1"><span>Notas de segmentacion o resguardos</span><textarea id="postNotes" placeholder="Ej.: Evitar lenguaje excluyente, publicar en fuentes amplias, reforzar requisitos excluyentes."></textarea></label>
-              <button class="btn primary" onclick="savePublication()">Registrar publicacion</button>
+              <button class="btn primary" onclick="savePublication()">Registrar publicación</button>
             </div>
           </div>
           <div class="card pad">
-            <h2>Publicaciones registradas</h2>
-            <div class="timeline">${items.length ? items.map(pub=>`<div class="event"><b>${escapeHtml(pub.title)}</b><span>${escapeHtml(pub.portals.join(", "))} · cierre ${escapeHtml(pub.closingDate)} · ${escapeHtml(pub.at)}</span><p>${escapeHtml(pub.body).slice(0,190)}...</p></div>`).join("") : `<p class="small">Aun no hay publicaciones registradas para este proceso.</p>`}</div>
+            <h2>Publicaciónes registradas</h2>
+            <div class="timeline">${items.length ? items.map(pub=>`<div class="event"><b>${escapeHtml(pub.title)}</b><span>${escapeHtml(pub.portals.join(", "))} · cierre ${escapeHtml(pub.closingDate)} · ${escapeHtml(pub.at)}</span><p>${escapeHtml(pub.body).slice(0,190)}...</p></div>`).join("") : `<p class="small">Aún no hay publicaciónes registradas para este proceso.</p>`}</div>
           </div>
         </div>`;
     }
     function savePublication(){
-      if (!data.requisitions.length) return toast("Primero crea una requisicion aprobada.");
+      if (!data.requisitions.length) return toast("Primero crea una requisición aprobada.");
       const portals = [...document.querySelectorAll(".postChannel:checked")].map(x => x.value);
       const title = val("postTitle").trim(), owner = val("postOwner").trim(), closingDate = val("postClose"), body = val("postBody").trim(), notes = val("postNotes").trim();
       if (!title || !owner || !closingDate) return toast("Completa titulo, responsable y fecha de cierre.");
-      if (!portals.length) return toast("Selecciona al menos un portal o fuente de difusion.");
-      if (body.length < 180) return toast("Redacta un aviso mas completo antes de publicarlo.");
+      if (!portals.length) return toast("Selecciona al menos un portal o fuente de difusión.");
+      if (body.length < 180) return toast("Redacta un aviso más completo antes de publicarlo.");
       const p = getProcess();
       p.sources = portals;
       data.publications.unshift({ id:`pub${Date.now()}`, process:data.activeProcess, title, owner, portals, closingDate, body, notes, at:new Date().toLocaleString("es-CL") });
@@ -615,10 +615,10 @@
             <p>${pill(p.status,"purple")} ${pill(p.responsible,"cyan")}</p>
           </div>
           <div class="card pad">
-            <h2>Publicacion simulada</h2>
+            <h2>Publicación simulada</h2>
             <p>${(p.sources || []).map(s=>pill(s,"gray")).join(" ")}</p>
-            ${published ? `<div class="hint">Oferta publicada: cierre ${escapeHtml(published.closingDate)} · responsable ${escapeHtml(published.owner)}</div>` : `<div class="hint warning">Antes de recibir postulaciones, registra la publicacion de la oferta y sus canales.</div>`}
-            <div class="actions"><button class="btn" onclick="setView('posting')">Gestionar publicacion</button><button class="btn primary" onclick="openPortal()">Simular postulacion</button><button class="btn" onclick="openVacancy()">Ver oferta</button></div>
+            ${published ? `<div class="hint">Oferta publicada: cierre ${escapeHtml(published.closingDate)} · responsable ${escapeHtml(published.owner)}</div>` : `<div class="hint warning">Antes de recibir postulaciones, registra la publicación de la oferta y sus canales.</div>`}
+            <div class="actions"><button class="btn" onclick="setView('posting')">Gestionar publicación</button><button class="btn primary" onclick="openPortal()">Simular postulación</button><button class="btn" onclick="openVacancy()">Ver oferta</button></div>
           </div>
         </div>
         <div class="kanban" id="kanban">${stages.map(stage => lane(stage)).join("")}</div>`;
@@ -630,7 +630,7 @@
     }
     function cardCandidate(c){
       return `<div class="candidate-card" draggable="${canEdit()}" data-id="${c.id}">
-        <strong>${c.name}</strong><span class="small">${c.source} · ${c.city} · ${c.exp} anos</span>
+        <strong>${c.name}</strong><span class="small">${c.source} · ${c.city} · ${c.exp} años</span>
         <div class="meta">${c.tags.slice(0,3).map(t=>pill(t)).join("")}${c.risks.map(r=>pill(r,"red")).join("")}</div>
         <div class="actions" style="margin-top:8px; justify-content:space-between"><span class="score">${c.score}% ATS</span><button class="btn small" onclick="openCandidate('${c.id}')">Ficha</button></div>
       </div>`;
@@ -656,25 +656,25 @@
     function generatedCandidate(idSuffix, base){
       const process = data.activeProcess;
       const id = `g${Date.now()}${idSuffix}`;
-      return { id, process, name:base.name, email:base.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replaceAll(" ",".")+"@demo.cl", phone:"+56 9 0000 0000", source:base.source, stage:base.stage, score:base.score, exp:base.exp, city:base.city, salary:base.salary, tags:base.tags, risks:base.risks, summary:base.summary, applied:new Date().toISOString().slice(0,10), cv:base.summary, answers:{ presencial:base.presencial, exp:String(base.exp), reclamos:base.reclamos, sistema:base.sistema, caso:base.caso }, matrix:base.matrix, humanDecision:base.decision, humanReason:base.reason, notes:"", discardReason:base.risks.join(", "), consent:true };
+      return { id, process, name:base.name, email:base.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replaceAll(" ",".")+"@demo.cl", phone:"+56 9 0000 0000", source:base.source, stage:base.stage, score:base.score, exp:base.exp, city:base.city, salary:base.salary, tags:base.tags, risks:base.risks, summary:base.summary, applied:new Date().toISOString().slice(0,10), cv:base.summary, answers:{ presencial:base.presencial, exp:String(base.exp), reclamos:base.reclamos, sistema:base.sistema, caso:base.caso }, matrix:base.matrix, humanDecision:base.decisión, humanReason:base.reason, notes:"", discardReason:base.risks.join(", "), consent:true };
     }
     function generateDemoCandidates(){
       const p = getProcess();
-      if (!data.requisitions.length) return toast("Primero crea una requisicion.");
+      if (!data.requisitions.length) return toast("Primero crea una requisición.");
       if (!p.must.length || !p.nice.length || !p.competencies.length) return toast("Primero completa los criterios del proceso activo.");
-      if (!hasActivePublication()) return toast("Primero registra la publicacion de la oferta.");
+      if (!hasActivePublication()) return toast("Primero registra la publicación de la oferta.");
       if (data.candidates.some(c => c.process === data.activeProcess)) return toast("Este proceso ya tiene candidatos. Si quieres otros, ingresa postulaciones manuales.");
       const samples = [
-        {name:"Camila Rojas",source:"Portal corporativo",stage:"Nuevo",score:92,exp:4,city:"Valparaiso",salary:820000,tags:["prioritario","reclamos","CRM"],risks:[],summary:"Experiencia en atencion presencial, gestion de reclamos y uso de CRM en servicios.",presencial:"Si",reclamos:"Gestiona reclamos con seguimiento y cierre informado.",sistema:"CRM Salesforce",caso:"Contuvo a usuario molesto, registro caso y coordino solucion.",matrix:{presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:1,claridad:2,renta:2},decision:"Revisar",reason:"Buen calce inicial; validar evidencia en entrevista."},
-        {name:"Diego Morales",source:"Referido",stage:"Revision CV",score:78,exp:3,city:"Valparaiso",salary:900000,tags:["Excel","administrativo"],risks:[],summary:"Administrativo interno con control documental, Excel y apoyo a clientes internos.",presencial:"Si",reclamos:"Algunos reclamos internos.",sistema:"ERP interno",caso:"Ordeno solicitudes pendientes y dio respuesta por prioridad.",matrix:{presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:2,claridad:2,renta:2},decision:"Revisar",reason:"Buen orden administrativo; validar trato con usuarios externos."},
-        {name:"Fernanda Perez",source:"Laborum",stage:"Revision CV",score:64,exp:5,city:"Valparaiso",salary:760000,tags:["call center","potencial"],risks:["CV desordenado"],summary:"Call center y reclamos. CV poco claro, pero respuestas muestran experiencia relevante.",presencial:"Si",reclamos:"Atiende reclamos diariamente.",sistema:"Sistema de tickets",caso:"Escucho, registro, escalo y cerro caso con usuario dificil.",matrix:{presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:1,claridad:0,renta:2},decision:"Revisar",reason:"Score bajo por CV; revisar experiencia real."},
-        {name:"Luis Araya",source:"Computrabajo",stage:"Nuevo",score:58,exp:0.5,city:"Valparaiso",salary:700000,tags:["formacion pertinente"],risks:["experiencia insuficiente"],summary:"Tecnico en administracion recien egresado con practica breve en oficina.",presencial:"Si",reclamos:"Sin experiencia directa.",sistema:"Excel basico",caso:"Apoyo administrativo simple.",matrix:{presencial:1,expMin:0,atencion:1,reclamos:0,crm:0,excel:1,claridad:2,renta:2},decision:"Descartar",reason:"No cumple experiencia minima."},
-        {name:"Natalia Soto",source:"LinkedIn",stage:"Preseleccionado",score:85,exp:6,city:"Vina del Mar",salary:920000,tags:["postventa","atencion masiva"],risks:[],summary:"Retail, postventa, cambios, reclamos y atencion masiva. Buen ajuste a condiciones.",presencial:"Si",reclamos:"Postventa y reclamos de clientes.",sistema:"POS/ERP",caso:"Gestiono cliente molesto por garantia y dio seguimiento.",matrix:{presencial:1,expMin:1,atencion:3,reclamos:2,crm:1,excel:1,claridad:2,renta:2},decision:"Revisar",reason:"Muy buen calce en atencion masiva."},
-        {name:"Javier Contreras",source:"LinkedIn",stage:"Descartado",score:88,exp:4,city:"Santiago",salary:980000,tags:["digital","CRM"],risks:["sin disponibilidad presencial"],summary:"Buen perfil digital y CRM, pero declara que solo puede trabajar remoto.",presencial:"No",reclamos:"Si",sistema:"HubSpot",caso:"Buen manejo digital, baja disponibilidad presencial.",matrix:{presencial:0,expMin:1,atencion:2,reclamos:1,crm:2,excel:2,claridad:2,renta:1},decision:"Descartar",reason:"No cumple requisito excluyente de presencialidad."},
-        {name:"Paula Herrera",source:"Carga manual",stage:"Preseleccionado",score:81,exp:8,city:"Valparaiso",salary:850000,tags:["secretaria","orden documental"],risks:[],summary:"Secretaria con coordinacion, archivo, agenda y atencion presencial.",presencial:"Si",reclamos:"Ocasionalmente.",sistema:"Sistema documental",caso:"Registro, seguimiento y trato cordial.",matrix:{presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:2,claridad:2,renta:2},decision:"Revisar",reason:"Fuerte orden y continuidad; validar reclamos complejos."},
-        {name:"Matias Vega",source:"Portal corporativo",stage:"Preseleccionado",score:90,exp:4,city:"Valparaiso",salary:930000,tags:["CRM","reportes","prioritario"],risks:["renta a validar"],summary:"Atencion, CRM, reportes semanales y seguimiento de casos en institucion de servicios.",presencial:"Si",reclamos:"Si",sistema:"CRM y Excel",caso:"Caso claro con registro, contacto y cierre.",matrix:{presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:2,claridad:2,renta:1},decision:"Revisar",reason:"Completo en atencion, sistemas y reportes; revisar renta."},
-        {name:"Rocio Fuentes",source:"Referido",stage:"Revision CV",score:52,exp:7,city:"Valparaiso",salary:800000,tags:["habilidades transferibles"],risks:["trayectoria no tradicional"],summary:"Reconvertion desde educacion. Alta comunicacion y seguimiento de apoderados, poca experiencia administrativa formal.",presencial:"Si",reclamos:"Familias y casos sensibles.",sistema:"Plataforma educativa",caso:"Contencion y seguimiento de casos sensibles.",matrix:{presencial:1,expMin:1,atencion:2,reclamos:2,crm:1,excel:1,claridad:2,renta:2},decision:"Revisar",reason:"Potencial por habilidades transferibles."},
-        {name:"Andres Leiva",source:"Computrabajo",stage:"Revision CV",score:89,exp:2,city:"Valparaiso",salary:940000,tags:["muchas palabras clave"],risks:["poca evidencia"],summary:"CV con muchas palabras clave: CRM, reclamos, Excel, usuario. Pocos ejemplos concretos.",presencial:"Si",reclamos:"Dice que si, sin detalle.",sistema:"CRM no especificado",caso:"Respuesta generica.",matrix:{presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:1,claridad:1,renta:1},decision:"Revisar",reason:"Alto score por keywords; requiere evidencia."}
+        {name:"Camila Rojas",source:"Portal corporativo",stage:"Nuevo",score:92,exp:4,city:"Valparaíso",salary:820000,tags:["prioritario","reclamos","CRM"],risks:[],summary:"Experiencia en atención presencial, gestión de reclamos y uso de CRM en servicios.",presencial:"Sí",reclamos:"Gestiona reclamos con seguimiento y cierre informado.",sistema:"CRM Salesforce",caso:"Contuvo a usuario molesto, registro caso y coordino solucion.",matrix:{presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:1,claridad:2,renta:2},decisión:"Revisar",reason:"Buen calce inicial; validar evidencia en entrevista."},
+        {name:"Diego Morales",source:"Referido",stage:"Revisión CV",score:78,exp:3,city:"Valparaíso",salary:900000,tags:["Excel","administrativo"],risks:[],summary:"Administrativo interno con control documental, Excel y apoyo a clientes internos.",presencial:"Sí",reclamos:"Algunos reclamos internos.",sistema:"ERP interno",caso:"Ordeno solicitudes pendientes y dio respuesta por prioridad.",matrix:{presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:2,claridad:2,renta:2},decisión:"Revisar",reason:"Buen orden administrativo; validar trato con usuarios externos."},
+        {name:"Fernanda Pérez",source:"Laborum",stage:"Revisión CV",score:64,exp:5,city:"Valparaíso",salary:760000,tags:["call center","potencial"],risks:["CV desordenado"],summary:"Call center y reclamos. CV poco claro, pero respuestas muestran experiencia relevante.",presencial:"Sí",reclamos:"Atiende reclamos diariamente.",sistema:"Sistema de tickets",caso:"Escucho, registro, escalo y cerro caso con usuario dificil.",matrix:{presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:1,claridad:0,renta:2},decisión:"Revisar",reason:"Score bajo por CV; revisar experiencia real."},
+        {name:"Luis Araya",source:"Computrabajo",stage:"Nuevo",score:58,exp:0.5,city:"Valparaíso",salary:700000,tags:["formación pertinente"],risks:["experiencia insuficiente"],summary:"Técnico en administración recién egresado con práctica breve en oficina.",presencial:"Sí",reclamos:"Sin experiencia directa.",sistema:"Excel básico",caso:"Apoyo administrativo simple.",matrix:{presencial:1,expMin:0,atencion:1,reclamos:0,crm:0,excel:1,claridad:2,renta:2},decisión:"Descartar",reason:"No cumple experiencia mínima."},
+        {name:"Natalia Soto",source:"LinkedIn",stage:"Preseleccionado",score:85,exp:6,city:"Viña del Mar",salary:920000,tags:["postventa","atención masiva"],risks:[],summary:"Retail, postventa, cambios, reclamos y atención masiva. Buen ajuste a condiciones.",presencial:"Sí",reclamos:"Postventa y reclamos de clientes.",sistema:"POS/ERP",caso:"Gestiono cliente molesto por garantia y dio seguimiento.",matrix:{presencial:1,expMin:1,atencion:3,reclamos:2,crm:1,excel:1,claridad:2,renta:2},decisión:"Revisar",reason:"Muy buen calce en atención masiva."},
+        {name:"Javier Contreras",source:"LinkedIn",stage:"Descartado",score:88,exp:4,city:"Santiago",salary:980000,tags:["digital","CRM"],risks:["sin disponibilidad presencial"],summary:"Buen perfil digital y CRM, pero declara que solo puede trabajar remoto.",presencial:"No",reclamos:"Sí",sistema:"HubSpot",caso:"Buen manejo digital, baja disponibilidad presencial.",matrix:{presencial:0,expMin:1,atencion:2,reclamos:1,crm:2,excel:2,claridad:2,renta:1},decisión:"Descartar",reason:"No cumple requisito excluyente de presencialidad."},
+        {name:"Paula Herrera",source:"Carga manual",stage:"Preseleccionado",score:81,exp:8,city:"Valparaíso",salary:850000,tags:["secretaria","orden documental"],risks:[],summary:"Secretaria con coordinación, archivo, agenda y atención presencial.",presencial:"Sí",reclamos:"Ocasionalmente.",sistema:"Sistema documental",caso:"Registro, seguimiento y trato cordial.",matrix:{presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:2,claridad:2,renta:2},decisión:"Revisar",reason:"Fuerte orden y continuidad; validar reclamos complejos."},
+        {name:"Matías Vega",source:"Portal corporativo",stage:"Preseleccionado",score:90,exp:4,city:"Valparaíso",salary:930000,tags:["CRM","reportes","prioritario"],risks:["renta a validar"],summary:"Atención, CRM, reportes semanales y seguimiento de casos en institución de servicios.",presencial:"Sí",reclamos:"Sí",sistema:"CRM y Excel",caso:"Caso claro con registro, contacto y cierre.",matrix:{presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:2,claridad:2,renta:1},decisión:"Revisar",reason:"Completo en atención, sistemas y reportes; revisar renta."},
+        {name:"Rocío Fuentes",source:"Referido",stage:"Revisión CV",score:52,exp:7,city:"Valparaíso",salary:800000,tags:["habilidades transferibles"],risks:["trayectoria no tradicional"],summary:"Reconversión desde educación. Alta comunicación y seguimiento de apoderados, poca experiencia administrativa formal.",presencial:"Sí",reclamos:"Familias y casos sensibles.",sistema:"Plataforma educativa",caso:"Contencion y seguimiento de casos sensibles.",matrix:{presencial:1,expMin:1,atencion:2,reclamos:2,crm:1,excel:1,claridad:2,renta:2},decisión:"Revisar",reason:"Potencial por habilidades transferibles."},
+        {name:"Andrés Leiva",source:"Computrabajo",stage:"Revisión CV",score:89,exp:2,city:"Valparaíso",salary:940000,tags:["muchas palabras clave"],risks:["poca evidencia"],summary:"CV con muchas palabras clave: CRM, reclamos, Excel, usuario. Pocos ejemplos concretos.",presencial:"Sí",reclamos:"Dice que sí, sin detalle.",sistema:"CRM no especificado",caso:"Respuesta genérica.",matrix:{presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:1,claridad:1,renta:1},decisión:"Revisar",reason:"Alto score por keywords; requiere evidencia."}
       ];
       data.candidates.push(...samples.map((sample, index) => generatedCandidate(index, sample)));
       data.audit.unshift(log(`Se generaron ${samples.length} postulantes ficticios para ${p.title}`, role()));
@@ -686,7 +686,7 @@
       const current = getProcess();
       const sorted = candidatesForActive().sort((a,b)=>b.score-a.score);
       document.getElementById("candidates").innerHTML = `
-        ${processToolbar("La base de candidatos se filtra por requisicion para evitar mezclar procesos.")}
+        ${processToolbar("La base de candidatos se filtra por requisición para evitar mezclar procesos.")}
         <div class="toolbar filters" style="margin-bottom:14px">
           <input id="qCand" placeholder="Buscar candidato, etiqueta o alerta" oninput="filterCandidates()">
           <select id="stageCand" onchange="filterCandidates()"><option value="">Todas las etapas</option>${stages.map(s=>`<option>${s}</option>`).join("")}</select>
@@ -695,9 +695,9 @@
         </div>
         <div class="hint" style="margin-bottom:14px">Mostrando candidatos asociados a: <b>${escapeHtml(current.title)}</b></div>
         <div class="card">
-          <table id="candidateTable"><thead><tr><th>Candidato</th><th>Etapa</th><th>Score ATS</th><th>Decision humana</th><th>Alertas</th><th></th></tr></thead><tbody>${candidateRows(sorted)}</tbody></table>
+          <table id="candidateTable"><thead><tr><th>Candidato</th><th>Etapa</th><th>Score ATS</th><th>Decisión humana</th><th>Alertas</th><th></th></tr></thead><tbody>${candidateRows(sorted)}</tbody></table>
         </div>
-        <div class="card pad" style="margin-top:14px"><h2>Comparacion critica</h2>${comparison()}<div class="actions" style="margin-top:12px"><button class="btn primary" onclick="completeTaskAndRender('t10')">Marcar tarea 10 completada</button></div></div>`;
+        <div class="card pad" style="margin-top:14px"><h2>Comparación crítica</h2>${comparison()}<div class="actions" style="margin-top:12px"><button class="btn primary" onclick="completeTaskAndRender('t10')">Marcar tarea 10 completada</button></div></div>`;
     }
     function candidateRows(list){
       if (!list.length) return `<tr><td colspan="6"><span class="small">No hay candidatos registrados. Ingresa postulaciones desde el portal candidato para poblar esta base.</span></td></tr>`;
@@ -715,7 +715,7 @@
     }
     function comparison(){
       const current = candidatesForActive();
-      if (!current.length) return `<p class="small">La comparacion estara disponible cuando existan candidatos con score y decision humana para este proceso.</p>`;
+      if (!current.length) return `<p class="small">La comparación estará disponible cuando existan candidatos con score y decisión humana para este proceso.</p>`;
       const highRisk = current.filter(c=>c.score>=85 && (c.risks.length || c.humanDecision!=="Avanzar"));
       const lowPotential = current.filter(c=>c.score<65 && c.humanDecision!=="Descartar");
       return `<div class="grid two"><div><h3>Posibles falsos positivos</h3>${highRisk.length ? highRisk.map(c=>`<p><b>${c.name}</b>: ${c.score}% ATS. ${escapeHtml(c.humanReason)}</p>`).join("") : `<p class="small">Sin casos detectados por ahora.</p>`}</div><div><h3>Posibles candidatos subvalorados</h3>${lowPotential.length ? lowPotential.map(c=>`<p><b>${c.name}</b>: ${c.score}% ATS. ${escapeHtml(c.humanReason)}</p>`).join("") : `<p class="small">Sin casos detectados por ahora.</p>`}</div></div>`;
@@ -723,10 +723,10 @@
 
     function renderScreening(){
       document.getElementById("screening").innerHTML = `
-        ${processToolbar("La matriz evalua solo postulaciones del proceso activo.")}
+        ${processToolbar("La matriz evalúa solo postulaciones del proceso activo.")}
         <div class="hint warning" style="margin-bottom:14px">La recomendacion de la matriz es orientativa. Un requisito excluyente no cumplido debe revisarse con criterio profesional y quedar trazado.</div>
         <div class="card" style="overflow:auto">
-          <table class="matrix"><thead><tr><th>Candidato</th>${criteria.map(c=>`<th>${c[1]}</th>`).join("")}<th>Total</th><th>Recomendacion</th><th>Decision humana</th></tr></thead>
+          <table class="matrix"><thead><tr><th>Candidato</th>${criteria.map(c=>`<th>${c[1]}</th>`).join("")}<th>Total</th><th>Recomendación</th><th>Decisión humana</th></tr></thead>
           <tbody>${candidatesForActive().length ? candidatesForActive().map(screenRow).join("") : `<tr><td colspan="${criteria.length + 4}"><span class="small">No hay candidatos para filtrar en este proceso. Primero registra postulaciones.</span></td></tr>`}</tbody></table>
         </div>`;
     }
@@ -747,11 +747,11 @@
     }
     function recommendationPill(c){ const r = recommendation(c); return pill(r, r==="Prioritario"?"green":r==="Preseleccionar"?"cyan":r==="Revisar"?"amber":"red"); }
     function updateMatrix(id,key,value){
-      const c = getCandidate(id); c.matrix[key] = Number(value); c.humanReason = `Matriz actualizada. Recomendacion orientativa: ${recommendation(c)}.`;
+      const c = getCandidate(id); c.matrix[key] = Number(value); c.humanReason = `Matriz actualizada. Recomendación orientativa: ${recommendation(c)}.`;
       completeTask("t5");
       data.audit.unshift(log(`Matriz curricular actualizada para ${c.name}`, role())); save(); renderScreening();
     }
-    function updateHumanDecision(id,value){ const c = getCandidate(id); c.humanDecision = value; completeTask("t5"); data.audit.unshift(log(`Decision humana registrada para ${c.name}: ${value}`, role())); save(); render(); toast("Decision humana actualizada."); }
+    function updateHumanDecision(id,value){ const c = getCandidate(id); c.humanDecision = value; completeTask("t5"); data.audit.unshift(log(`Decisión humana registrada para ${c.name}: ${value}`, role())); save(); render(); toast("Decisión humana actualizada."); }
 
     function renderInterviews(){
       const eligible = candidatesForActive().filter(c=>c.humanDecision!=="Descartar");
@@ -768,7 +768,7 @@
               <label><span>Modalidad</span><select id="intMode"><option>Presencial</option><option>Online</option></select></label>
               <label><span>Entrevistador/a</span><input id="intBy" value="Jefatura solicitante"></label>
               <label><span>Observaciones</span><textarea id="intNotes">Validar manejo de reclamos y ajuste a condiciones.</textarea></label>
-              <button class="btn primary" onclick="scheduleInterview()">Agendar y generar invitacion</button>
+              <button class="btn primary" onclick="scheduleInterview()">Agendar y generar invitación</button>
             </div>` : `<p class="small">No hay candidatos disponibles para entrevista. Registra postulaciones y clasifica al menos un candidato como revisable o avanzable.</p>`}
           </div>
           <div class="card pad"><h2>Entrevistas registradas</h2>
@@ -790,17 +790,17 @@
       document.getElementById("scorecards").innerHTML = `
         ${processToolbar("Las scorecards se guardan contra candidatos del proceso activo.")}
         <div class="toolbar filters" style="margin-bottom:14px">${eligible.length ? `<select id="scoreCand">${eligible.map(c=>`<option value="${c.id}">${c.name}</option>`).join("")}</select><button class="btn primary" onclick="openScorecard(document.getElementById('scoreCand').value)">Completar scorecard</button>` : `<span class="small">No hay candidatos disponibles para evaluar.</span>`}</div>
-        <div class="card"><table><thead><tr><th>Candidato</th><th>Promedio</th><th>Recomendacion</th><th>Comentario</th><th></th></tr></thead><tbody>${rows.length ? rows.map(([id,sc])=>`<tr><td>${getCandidate(id)?.name}</td><td><b>${avg(sc)}/5</b></td><td>${sc.recommendation}</td><td>${escapeHtml(sc.comment)}</td><td><button class="btn small" onclick="openScorecard('${id}')">Editar</button></td></tr>`).join("") : `<tr><td colspan="5"><span class="small">Sin scorecards registradas para este proceso.</span></td></tr>`}</tbody></table></div>`;
+        <div class="card"><table><thead><tr><th>Candidato</th><th>Promedio</th><th>Recomendación</th><th>Comentario</th><th></th></tr></thead><tbody>${rows.length ? rows.map(([id,sc])=>`<tr><td>${getCandidate(id)?.name}</td><td><b>${avg(sc)}/5</b></td><td>${sc.recommendation}</td><td>${escapeHtml(sc.comment)}</td><td><button class="btn small" onclick="openScorecard('${id}')">Editar</button></td></tr>`).join("") : `<tr><td colspan="5"><span class="small">Sin scorecards registradas para este proceso.</span></td></tr>`}</tbody></table></div>`;
     }
     function openScorecard(id){
       const c = getCandidate(id), sc = data.scorecards[id] || {comunicacion:3,experiencia:3,motivacion:3,dificil:3,orden:3,condiciones:3,comment:"",recommendation:"Revisar",date:new Date().toISOString().slice(0,10),validate:""};
       data.scorecards[id] = sc;
       openModal(`Scorecard: ${c.name}`, `<div class="form two-col">
-        ${scoreInput("comunicacion","Comunicacion",sc.comunicacion)}${scoreInput("experiencia","Experiencia relevante",sc.experiencia)}
-        ${scoreInput("motivacion","Motivacion por el cargo",sc.motivacion)}${scoreInput("dificil","Manejo de situaciones dificiles",sc.dificil)}
+        ${scoreInput("comunicacion","Comunicación",sc.comunicacion)}${scoreInput("experiencia","Experiencia relevante",sc.experiencia)}
+        ${scoreInput("motivacion","Motivación por el cargo",sc.motivacion)}${scoreInput("dificil","Manejo de situaciones difíciles",sc.dificil)}
         ${scoreInput("orden","Orden y seguimiento",sc.orden)}${scoreInput("condiciones","Ajuste a condiciones",sc.condiciones)}
         <label><span>Fecha</span><input id="sc_date" type="date" value="${sc.date}"></label>
-        <label><span>Recomendacion</span><select id="sc_recommendation"><option>Avanzar</option><option>Revisar</option><option>Descartar</option></select></label>
+        <label><span>Recomendación</span><select id="sc_recommendation"><option>Avanzar</option><option>Revisar</option><option>Descartar</option></select></label>
         <label style="grid-column:1/-1"><span>Comentario del entrevistador</span><textarea id="sc_comment">${escapeHtml(sc.comment)}</textarea></label>
         <label style="grid-column:1/-1"><span>Punto a validar</span><input id="sc_validate" value="${escapeHtml(sc.validate)}"></label>
         <button class="btn primary" onclick="saveScorecard('${id}')">Guardar scorecard</button>
@@ -824,21 +824,21 @@
       const activeIds = new Set(candidatesForActive().map(c => c.id));
       const communications = data.communications.filter(m => !m.candidateIds || m.candidateIds.some(id => activeIds.has(id)));
       document.getElementById("communications").innerHTML = `
-        ${processToolbar("Los mensajes y destinatarios se limitan a esta requisicion.")}
+        ${processToolbar("Los mensajes y destinatarios se limitan a esta requisición.")}
         <div class="grid two">
-          <div class="card pad"><h2>Generar comunicacion simulada</h2>
+          <div class="card pad"><h2>Generar comunicación simulada</h2>
             <div class="form">
-              <label><span>Tipo de comunicacion</span><select id="msgType" onchange="renderMessageTargets()"><option value="reject">Mensaje de descarte</option><option value="received">Confirmacion de postulacion</option><option value="interview">Invitacion a entrevista</option><option value="advance">Avance a siguiente etapa</option><option value="offer">Oferta</option></select></label>
+              <label><span>Tipo de comunicación</span><select id="msgType" onchange="renderMessageTargets()"><option value="reject">Mensaje de descarte</option><option value="received">Confirmacion de postulación</option><option value="interview">Invitacion a entrevista</option><option value="advance">Avance a siguiente etapa</option><option value="offer">Oferta</option></select></label>
               <div id="msgTargets"></div>
               <label><span>Mensaje a registrar</span><textarea id="msgBody" style="min-height:230px" placeholder="Redacta el mensaje que recibira el candidato. Debe ser claro, respetuoso y consistente con su etapa."></textarea></label>
               <div class="actions"><button class="btn" onclick="loadSuggestedTemplate()">Usar plantilla sugerida</button><button class="btn primary" onclick="saveMessage()">Registrar en historial</button></div>
             </div>
           </div>
-          <div class="card pad"><h2>Mensajes registrados</h2><div class="timeline">${communications.map(m=>`<div class="event"><b>${m.title}</b><span>${m.to} · ${m.at}</span><p>${escapeHtml(m.body).slice(0,170)}...</p></div>`).join("") || "<p class='small'>Aun no hay mensajes generados para este proceso.</p>"}</div></div>
+          <div class="card pad"><h2>Mensajes registrados</h2><div class="timeline">${communications.map(m=>`<div class="event"><b>${m.title}</b><span>${m.to} · ${m.at}</span><p>${escapeHtml(m.body).slice(0,170)}...</p></div>`).join("") || "<p class='small'>Aún no hay mensajes generados para este proceso.</p>"}</div></div>
         </div>`;
       renderMessageTargets();
     }
-    function fillTemplate(t,c,extra={}){ return t.replaceAll("[Nombre]", c.name).replaceAll("[Cargo]", getProcess().title).replaceAll("[fecha]", extra.fecha || "por definir").replaceAll("[hora]", extra.hora || "por definir").replaceAll("[modalidad]", extra.modalidad || "por definir").replaceAll("[entrevistador]", extra.entrevistador || "Equipo de seleccion"); }
+    function fillTemplate(t,c,extra={}){ return t.replaceAll("[Nombre]", c.name).replaceAll("[Cargo]", getProcess().title).replaceAll("[fecha]", extra.fecha || "por definir").replaceAll("[hora]", extra.hora || "por definir").replaceAll("[modalidad]", extra.modalidad || "por definir").replaceAll("[entrevistador]", extra.entrevistador || "Equipo de selección"); }
     function renderMessageTargets(){
       const type = val("msgType");
       const target = document.getElementById("msgTargets");
@@ -865,10 +865,10 @@
       const type = val("msgType"), body = val("msgBody").trim(), selected = selectedMessageCandidates();
       if (!selected.length) return toast(type === "reject" ? "Selecciona al menos un candidato descartado." : "Selecciona un candidato.");
       if (type === "reject" && selected.some(c => c.stage !== "Descartado")) return toast("El mensaje de descarte solo puede registrarse para candidatos en etapa Descartado.");
-      if (body.length < 80) return toast("Redacta un mensaje mas completo antes de registrarlo.");
+      if (body.length < 80) return toast("Redacta un mensaje más completo antes de registrarlo.");
       data.communications.unshift({title:type,to:selected.map(c=>c.name).join(", "),candidateIds:selected.map(c=>c.id),process:data.activeProcess,body,at:new Date().toLocaleString("es-CL")});
       if (type === "reject") completeTask("t9");
-      data.audit.unshift(log(`Comunicacion registrada para ${selected.map(c=>c.name).join(", ")}`, role()));
+      data.audit.unshift(log(`Comunicación registrada para ${selected.map(c=>c.name).join(", ")}`, role()));
       save(); renderCommunications(); toast("Mensaje registrado.");
     }
 
@@ -877,7 +877,7 @@
       document.getElementById("reports").innerHTML = `
         ${processToolbar("El reporte ejecutivo resume solo candidatos, entrevistas y evaluaciones de este proceso.")}
         <div class="grid two">
-          <div class="card pad"><h2>Finalistas en pipeline</h2>${finalists.length ? finalists.map((c,i)=>`<div class="event"><b>${i+1}. ${c.name}</b><span>${c.score}% ATS · Decision: ${c.humanDecision}</span><p>${escapeHtml(c.humanReason)}</p><button class="btn small" onclick="openCandidate('${c.id}')">Ver evidencia</button></div>`).join("") : `<p class="small">Aun no hay candidatos en etapa Finalista. Mueve candidatos desde el Kanban para construir la terna.</p>`}${finalists.length < 3 ? `<div class="hint warning" style="margin-top:12px">Faltan ${3-finalists.length} finalista(s) para completar una terna. Vuelve al pipeline y mueve candidatos a Finalista cuando tengas evidencia suficiente.</div>` : `<div class="hint" style="margin-top:12px">Terna formada desde la etapa Finalista del pipeline.</div>`}</div>
+          <div class="card pad"><h2>Finalistas en pipeline</h2>${finalists.length ? finalists.map((c,i)=>`<div class="event"><b>${i+1}. ${c.name}</b><span>${c.score}% ATS · Decisión: ${c.humanDecision}</span><p>${escapeHtml(c.humanReason)}</p><button class="btn small" onclick="openCandidate('${c.id}')">Ver evidencia</button></div>`).join("") : `<p class="small">Aún no hay candidatos en etapa Finalista. Mueve candidatos desde el Kanban para construir la terna.</p>`}${finalists.length < 3 ? `<div class="hint warning" style="margin-top:12px">Faltan ${3-finalists.length} finalista(s) para completar una terna. Vuelve al pipeline y mueve candidatos a Finalista cuando tengas evidencia suficiente.</div>` : `<div class="hint" style="margin-top:12px">Terna formada desde la etapa Finalista del pipeline.</div>`}</div>
           <div class="card pad"><h2>Reporte ejecutivo</h2><div class="actions" style="margin-bottom:10px"><button class="btn primary" onclick="generateReport()">Generar reporte</button><button class="btn" onclick="copyReport()">Copiar reporte</button></div><div id="reportText" class="report-box">${escapeHtml(buildReport())}</div></div>
         </div>`;
     }
@@ -898,19 +898,19 @@ Candidatos entrevistados: ${Object.keys(data.scorecards).filter(id => currentIds
 
 Finalistas:
 ${terna.length ? terna.map((c,i)=>`${i+1}. ${c.name} - ${c.humanReason} Punto a validar: ${(data.scorecards[c.id]?.validate || "condiciones y evidencia en entrevista final")}.`).join(`
-`) : "Aun no hay finalistas definidos en el pipeline."}
+`) : "Aún no hay finalistas definidos en el pipeline."}
 
 Resumen ejecutivo:
-Se revisaron las candidaturas considerando requisitos excluyentes, experiencia relevante, manejo de herramientas, respuestas de postulacion, matriz curricular, score ATS simulado y revision humana.
+Se revisaron las candidaturas considerando requisitos excluyentes, experiencia relevante, manejo de herramientas, respuestas de postulación, matriz curricular, score ATS simulado y revisión humana.
 
 Riesgos o puntos a validar:
 - El score automatico puede sobrevalorar palabras clave sin evidencia.
 - La disponibilidad presencial y renta deben confirmarse antes de oferta.
 - Candidatos con trayectoria no tradicional deben revisarse sin sesgos.
-- Descartes deben tener motivo trazable y comunicacion respetuosa.
+- Descartes deben tener motivo trazable y comunicación respetuosa.
 
 Proximos pasos:
-Coordinar entrevistas finales con jefatura, completar pauta de evaluacion y registrar decision final.`;
+Coordinar entrevistas finales con jefatura, completar pauta de evaluación y registrar decisión final.`;
     }
     function generateReport(){ completeTask("t12"); data.audit.unshift(log("Reporte ejecutivo generado", role())); save(); document.getElementById("reportText").textContent = buildReport(); toast("Reporte generado y registrado en trazabilidad."); }
     async function copyReport(){ try { await navigator.clipboard.writeText(buildReport()); toast("Reporte copiado al portapapeles."); } catch { toast("No se pudo copiar automaticamente. Puedes seleccionarlo manualmente."); } }
@@ -921,11 +921,11 @@ Coordinar entrevistas finales con jefatura, completar pauta de evaluacion y regi
           <div class="card pad"><h2>Roles y permisos</h2><table><tbody>
             <tr><td>Administrador</td><td>Configura y reinicia la demo.</td></tr><tr><td>Reclutador</td><td>Mueve candidatos, revisa fichas y agenda entrevistas.</td></tr>
             <tr><td>Jefatura solicitante</td><td>Revisa terna, criterios y scorecards.</td></tr><tr><td>Entrevistador</td><td>Completa pauta y evidencia.</td></tr>
-            <tr><td>Candidato</td><td>Usa portal y visualiza experiencia de postulacion.</td></tr><tr><td>Observador docente</td><td>Analiza trazabilidad y sesgos.</td></tr>
+            <tr><td>Candidato</td><td>Usa portal y visualiza experiencia de postulación.</td></tr><tr><td>Observador docente</td><td>Analiza trazabilidad y sesgos.</td></tr>
           </tbody></table></div>
           <div class="card pad"><h2>Trazabilidad</h2><div class="timeline">${data.audit.map(a=>`<div class="event"><b>${escapeHtml(a.text)}</b><span>${escapeHtml(a.by)} · ${escapeHtml(a.at)}</span></div>`).join("")}</div></div>
         </div>
-        <div class="card pad" style="margin-top:14px"><h2>Privacidad y limites</h2><p>Todos los datos son ficticios. La maqueta usa localStorage, no envia correos reales y no debe contener datos personales reales. Su objetivo es simular un flujo de seleccion con criterios, evidencia, trazabilidad y responsabilidad humana.</p><button class="btn danger" onclick="resetDemo()">Reiniciar demo</button></div>`;
+        <div class="card pad" style="margin-top:14px"><h2>Privacidad y límites</h2><p>Todos los datos son ficticios. La maqueta usa localStorage, no envía correos reales y no debe contener datos personales reales. Su objetivo es simular un flujo de seleccion con criterios, evidencia, trazabilidad y responsabilidad humana.</p><button class="btn danger" onclick="resetDemo()">Reiniciar demo</button></div>`;
     }
 
     function openCandidate(id){
@@ -933,10 +933,10 @@ Coordinar entrevistas finales con jefatura, completar pauta de evaluacion y regi
       openModal(`Ficha: ${c.name}`, `<div class="split">
         <div class="grid">
           <div class="card pad"><h2>${c.name}</h2><p>${c.email} · ${c.phone} · ${c.city}</p><p><b>Fuente:</b> ${c.source} · <b>Etapa:</b> ${c.stage} · <b>Renta:</b> ${money(c.salary)}</p><p>${c.tags.map(t=>pill(t)).join(" ")} ${c.risks.map(r=>pill(r,"red")).join(" ")}</p></div>
-          <div class="card pad"><h3>CV y resumen extraido simulado</h3><p>${escapeHtml(c.cv)}</p><h3>Respuestas de postulacion</h3><table><tbody>${Object.entries(c.answers).map(([k,v])=>`<tr><td>${k}</td><td>${escapeHtml(v)}</td></tr>`).join("")}</tbody></table></div>
-          <div class="card pad"><h3>Notas internas y descarte</h3><div class="form"><label><span>Notas internas</span><textarea id="candNotes">${escapeHtml(c.notes)}</textarea></label><label><span>Motivo de descarte</span><input id="discardReason" value="${escapeHtml(c.discardReason)}"></label><label><span>Decision humana</span><select id="humanDecision"><option>Avanzar</option><option>Revisar</option><option>Descartar</option></select></label><label><span>Motivo final</span><textarea id="humanReason">${escapeHtml(c.humanReason)}</textarea></label><button class="btn primary" onclick="saveCandidate('${c.id}')">Guardar ficha</button></div></div>
+          <div class="card pad"><h3>CV y resumen extraído simulado</h3><p>${escapeHtml(c.cv)}</p><h3>Respuestas de postulación</h3><table><tbody>${Object.entries(c.answers).map(([k,v])=>`<tr><td>${k}</td><td>${escapeHtml(v)}</td></tr>`).join("")}</tbody></table></div>
+          <div class="card pad"><h3>Notas internas y descarte</h3><div class="form"><label><span>Notas internas</span><textarea id="candNotes">${escapeHtml(c.notes)}</textarea></label><label><span>Motivo de descarte</span><input id="discardReason" value="${escapeHtml(c.discardReason)}"></label><label><span>Decisión humana</span><select id="humanDecision"><option>Avanzar</option><option>Revisar</option><option>Descartar</option></select></label><label><span>Motivo final</span><textarea id="humanReason">${escapeHtml(c.humanReason)}</textarea></label><button class="btn primary" onclick="saveCandidate('${c.id}')">Guardar ficha</button></div></div>
         </div>
-        <div class="card pad side"><h3>Score y movimiento</h3><p><span class="score">${c.score}% ATS</span></p><p>${recommendationPill(c)} <span class="small">segun matriz</span></p><label class="small">Cambiar etapa</label><select id="moveStage">${stages.map(s=>`<option ${s===c.stage?"selected":""}>${s}</option>`).join("")}</select><button class="btn primary" style="width:100%; margin-top:8px" onclick="moveFromFicha('${c.id}')" ${canEdit()?"":"disabled"}>Actualizar etapa</button><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><h3>Historial reciente</h3><div class="timeline">${data.audit.slice(0,8).map(a=>`<div class="event"><b>${escapeHtml(a.text)}</b><span>${escapeHtml(a.by)} · ${escapeHtml(a.at)}</span></div>`).join("")}</div></div>
+        <div class="card pad side"><h3>Score y movimiento</h3><p><span class="score">${c.score}% ATS</span></p><p>${recommendationPill(c)} <span class="small">según matriz</span></p><label class="small">Cambiar etapa</label><select id="moveStage">${stages.map(s=>`<option ${s===c.stage?"selected":""}>${s}</option>`).join("")}</select><button class="btn primary" style="width:100%; margin-top:8px" onclick="moveFromFicha('${c.id}')" ${canEdit()?"":"disabled"}>Actualizar etapa</button><hr style="border:0;border-top:1px solid var(--line);margin:14px 0"><h3>Historial reciente</h3><div class="timeline">${data.audit.slice(0,8).map(a=>`<div class="event"><b>${escapeHtml(a.text)}</b><span>${escapeHtml(a.by)} · ${escapeHtml(a.at)}</span></div>`).join("")}</div></div>
       </div>`);
       document.getElementById("humanDecision").value = c.humanDecision;
     }
@@ -948,34 +948,34 @@ Coordinar entrevistas finales con jefatura, completar pauta de evaluacion y regi
     function moveFromFicha(id){ moveCandidate(id, val("moveStage")); closeModal(); }
     function openVacancy(){ const p = getProcess(); openModal("Oferta simulada", `<div class="card pad"><h2>${p.title}</h2><p>${p.description}</p>${listBlock("Requisitos excluyentes",p.must,"red")}${listBlock("Deseables",p.nice,"amber")}<button class="btn primary" onclick="openPortal()">Postular</button></div>`); }
     function openPortal(){
-      if (!data.requisitions.length) { toast("Primero crea una requisicion para asociar postulaciones al proceso."); return; }
-      if (!hasActivePublication()) { toast("Primero publica la oferta en el modulo Publicacion."); return; }
+      if (!data.requisitions.length) { toast("Primero crea una requisición para asociar postulaciones al proceso."); return; }
+      if (!hasActivePublication()) { toast("Primero publica la oferta en el módulo Publicación."); return; }
       const p = getProcess();
       openModal("Portal candidato", `<div class="grid two">
-        <div class="card pad"><h2>${p.title}</h2><p>${p.description}</p><div class="hint">Formulario simulado para crear una postulacion asociada al proceso activo.</div></div>
+        <div class="card pad"><h2>${p.title}</h2><p>${p.description}</p><div class="hint">Formulario simulado para crear una postulación asociada al proceso activo.</div></div>
         <div class="card pad"><h2>Formulario</h2><div class="form">
           <label><span>Nombre ficticio</span><input id="newName" placeholder="Nombre y apellido"></label>
           <label><span>Correo ficticio</span><input id="newEmail" placeholder="correo@demo.cl"></label>
-          <label><span>Telefono ficticio</span><input id="newPhone" placeholder="+56 9 ...."></label>
+          <label><span>Teléfono ficticio</span><input id="newPhone" placeholder="+56 9 ...."></label>
           <label><span>Fuente</span><select id="newSource">${p.sources.map(s=>`<option>${s}</option>`).join("")}</select></label>
           <label><span>Ciudad</span><input id="newCity" placeholder="Ciudad de residencia"></label>
-          <label><span>Anos experiencia</span><input id="newExp" type="number" min="0" step="0.5" placeholder="0"></label>
-          <label><span>Pretension renta liquida</span><input id="newSalary" type="number" min="0" placeholder="Monto en CLP"></label>
-          <label><span>Disponibilidad presencial Valparaiso</span><select id="newPres"><option>Si</option><option>No</option></select></label>
-          <label><span>Gestion de reclamos o casos dificiles</span><textarea id="newClaims" placeholder="Describe evidencia concreta."></textarea></label>
+          <label><span>Años de experiencia</span><input id="newExp" type="number" min="0" step="0.5" placeholder="0"></label>
+          <label><span>Pretensión renta líquida</span><input id="newSalary" type="number" min="0" placeholder="Monto en CLP"></label>
+          <label><span>Disponibilidad presencial Valparaíso</span><select id="newPres"><option>Sí</option><option>No</option></select></label>
+          <label><span>Gestión de reclamos o casos difíciles</span><textarea id="newClaims" placeholder="Describe evidencia concreta."></textarea></label>
           <label><span>CRM, ERP o sistema de registro usado</span><input id="newSystem" placeholder="Nombre del sistema o 'sin experiencia'"></label>
-          <label><span>Experiencia atendiendo a un usuario dificil</span><textarea id="newCase" placeholder="Describe situacion, accion y resultado."></textarea></label>
+          <label><span>Experiencia atendiendo a un usuario difícil</span><textarea id="newCase" placeholder="Describe situación, acción y resultado."></textarea></label>
           <label><span>Resumen curricular / CV simulado</span><textarea id="newCv" placeholder="Trayectoria, funciones, herramientas y logros relevantes."></textarea></label>
           <label><input id="newConsent" type="checkbox" checked> Acepto consentimiento ficticio de tratamiento de datos.</label>
-          <button class="btn primary" onclick="submitApplication()">Enviar postulacion ficticia</button>
+          <button class="btn primary" onclick="submitApplication()">Enviar postulación ficticia</button>
         </div></div></div>`);
     }
     function submitApplication(){
       if (!document.getElementById("newConsent").checked) return toast("El consentimiento ficticio es obligatorio para la demo.");
-      if (!requiredValues(["newName","newEmail","newPhone","newCity","newExp","newSalary","newClaims","newSystem","newCase","newCv"], "todos los campos de postulacion")) return;
-      const id = "c"+Date.now(), exp = Number(val("newExp")), pres = val("newPres")==="Si", score = Math.max(25, Math.min(94, 45 + exp*8 + (pres?12:-18)));
-      const c = { id, name:val("newName"), email:val("newEmail"), phone:val("newPhone"), source:val("newSource"), stage:pres?"Nuevo":"Descartado", score, exp, city:val("newCity"), salary:Number(val("newSalary")), tags:["creado en clase"], risks:pres?[]:["no cumple presencialidad"], summary:val("newCv"), process:"p1", applied:new Date().toISOString().slice(0,10), cv:val("newCv"), answers:{presencial:val("newPres"),exp:String(exp),reclamos:val("newClaims"),sistema:val("newSystem"),caso:val("newCase")}, matrix:{presencial:pres?1:0,expMin:exp>=1?1:0,atencion:2,reclamos:val("newClaims").length>25?1:0,crm:val("newSystem").toLowerCase().includes("sin experiencia")?0:1,excel:0,claridad:val("newCv").length>80?2:1,renta:2}, humanDecision:pres?"Revisar":"Descartar", humanReason:pres?"Postulacion creada en el portal; revisar evidencia curricular y respuestas.":"No cumple presencialidad.", notes:"", discardReason:pres?"":"No cumple requisito excluyente", consent:true };
-      data.candidates.unshift(c); completeTask("t3"); data.audit.unshift(log(`Postulacion ficticia creada: ${c.name}`, "Portal candidato")); save(); closeModal(); render(); toast("Postulacion ficticia creada.");
+      if (!requiredValues(["newName","newEmail","newPhone","newCity","newExp","newSalary","newClaims","newSystem","newCase","newCv"], "todos los campos de postulación")) return;
+      const id = "c"+Date.now(), exp = Number(val("newExp")), pres = val("newPres")==="Sí", score = Math.max(25, Math.min(94, 45 + exp*8 + (pres?12:-18)));
+      const c = { id, name:val("newName"), email:val("newEmail"), phone:val("newPhone"), source:val("newSource"), stage:pres?"Nuevo":"Descartado", score, exp, city:val("newCity"), salary:Number(val("newSalary")), tags:["creado en clase"], risks:pres?[]:["no cumple presencialidad"], summary:val("newCv"), process:"p1", applied:new Date().toISOString().slice(0,10), cv:val("newCv"), answers:{presencial:val("newPres"),exp:String(exp),reclamos:val("newClaims"),sistema:val("newSystem"),caso:val("newCase")}, matrix:{presencial:pres?1:0,expMin:exp>=1?1:0,atencion:2,reclamos:val("newClaims").length>25?1:0,crm:val("newSystem").toLowerCase().includes("sin experiencia")?0:1,excel:0,claridad:val("newCv").length>80?2:1,renta:2}, humanDecision:pres?"Revisar":"Descartar", humanReason:pres?"Postulación creada en el portal; revisar evidencia curricular y respuestas.":"No cumple presencialidad.", notes:"", discardReason:pres?"":"No cumple requisito excluyente", consent:true };
+      data.candidates.unshift(c); completeTask("t3"); data.audit.unshift(log(`Postulación ficticia creada: ${c.name}`, "Portal candidato")); save(); closeModal(); render(); toast("Postulación ficticia creada.");
     }
 
     function openModal(title, body){ document.getElementById("modalTitle").textContent = title; document.getElementById("modalBody").innerHTML = body; document.getElementById("modalWrap").classList.add("open"); }
