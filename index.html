@@ -173,6 +173,7 @@
       <section class="view active" id="dashboard"></section>
       <section class="view" id="exercise"></section>
       <section class="view" id="requisitions"></section>
+      <section class="view" id="posting"></section>
       <section class="view" id="processes"></section>
       <section class="view" id="candidates"></section>
       <section class="view" id="screening"></section>
@@ -201,6 +202,7 @@
       ["dashboard", "Dashboard", "Vista general del proceso, carga de trabajo y proximos pasos."],
       ["exercise", "Plan de trabajo", "Checklist operativo del proceso de seleccion."],
       ["requisitions", "Requisiciones", "Solicitud de contratacion y criterios del cargo."],
+      ["posting", "Publicacion", "Canales, aviso y registro de difusion de la oferta."],
       ["processes", "Proceso / Kanban", "Vacante activa y pipeline de candidatos."],
       ["candidates", "Candidatos", "Base, fichas, ranking ATS y decision humana."],
       ["screening", "Filtro curricular", "Matriz de requisitos y recomendacion orientativa."],
@@ -230,6 +232,7 @@
     const taskDefinitions = [
       { id:"t1", title:"Requisicion validada", detail:"Crear o revisar la solicitud con datos completos del cargo.", view:"requisitions", action:"Guardar revision" },
       { id:"t2", title:"Criterios del cargo definidos", detail:"Editar requisitos excluyentes, deseables y competencias.", view:"requisitions", action:"Guardar criterios" },
+      { id:"t3p", title:"Oferta publicada", detail:"Elegir portales, redactar el aviso y registrar la publicacion simulada.", view:"posting", action:"Publicar oferta" },
       { id:"t3", title:"Postulacion ingresada", detail:"Crear una postulacion ficticia desde el portal candidato.", view:"processes", action:"Enviar postulacion" },
       { id:"t4", title:"Fichas revisadas", detail:"Abrir candidatos, registrar notas y decision preliminar.", view:"candidates", action:"Guardar ficha" },
       { id:"t5", title:"Filtro curricular aplicado", detail:"Puntuar candidatos en la matriz y registrar decision humana.", view:"screening", action:"Actualizar matriz" },
@@ -262,6 +265,7 @@
         competencies: ["Comunicacion clara", "Orden y seguimiento", "Manejo de situaciones dificiles", "Orientacion al usuario"],
         questions: ["Disponibilidad presencial en Valparaiso", "Anos de experiencia", "Gestion de reclamos", "Uso de CRM/ERP", "Pretension de renta", "Caso de usuario dificil"]
       }],
+      publications: [],
       candidates: [
         cand("c1","Camila Rojas","Portal corporativo","Nuevo",92,4,"Valparaiso",820000,["prioritario","reclamos","CRM"],[], "Experiencia en atencion presencial, gestion de reclamos y uso de CRM en servicios.", "Si","4 anos","Si, casos de alta molestia","CRM Salesforce","Relata contencion y seguimiento con cierre informado.", {presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:1,claridad:2,renta:2}, "Avanzar", "Cumple excluyentes y aporta experiencia directa en reclamos."),
         cand("c2","Diego Morales","Referido","Revision CV",78,3,"Valparaiso",900000,["Excel","administrativo"],[], "Administrativo interno con control documental, Excel y apoyo a clientes internos.", "Si","3 anos","Algunos reclamos internos","ERP interno","Describe orden, registro y derivacion.", {presencial:1,expMin:1,atencion:2,reclamos:1,crm:1,excel:2,claridad:2,renta:2}, "Revisar", "Buen orden administrativo; validar trato con usuarios externos."),
@@ -308,6 +312,7 @@
       value.processes[0].nice = [];
       value.processes[0].competencies = [];
       value.candidates = [];
+      value.publications = [];
       value.interviews = [];
       value.scorecards = {};
       value.communications = [];
@@ -325,6 +330,7 @@
     function normalizeData(value){
       value.taskStatus = value.taskStatus || emptyTaskStatus();
       taskDefinitions.forEach(t => value.taskStatus[t.id] = value.taskStatus[t.id] || { done:false, at:"" });
+      value.publications = value.publications || [];
       return value;
     }
     function save(){ localStorage.setItem("aulaTalentATS", JSON.stringify(data)); }
@@ -364,13 +370,13 @@
 
     function render(){
       renderNav();
-      renderDashboard(); renderExercise(); renderRequisitions(); renderProcesses(); renderCandidates();
+      renderDashboard(); renderExercise(); renderRequisitions(); renderPosting(); renderProcesses(); renderCandidates();
       renderScreening(); renderInterviews(); renderScorecards(); renderCommunications(); renderReports(); renderSettings();
     }
     function renderNav(){
       document.getElementById("nav").innerHTML = navItems.map(([id,label]) => `<button class="${id===active?"active":""}" onclick="setView('${id}')"><span>${icon(id)}</span>${label}</button>`).join("");
     }
-    function icon(id){ return {dashboard:"▦",exercise:"☑",requisitions:"✓",processes:"▣",candidates:"◉",screening:"▤",interviews:"◷",scorecards:"✎",communications:"✉",reports:"▥",settings:"⚙"}[id]; }
+    function icon(id){ return {dashboard:"▦",exercise:"☑",requisitions:"✓",posting:"⇢",processes:"▣",candidates:"◉",screening:"▤",interviews:"◷",scorecards:"✎",communications:"✉",reports:"▥",settings:"⚙"}[id]; }
     function setView(id){
       active = id;
       const item = navItems.find(n => n[0] === id);
@@ -549,8 +555,56 @@
       save(); closeModal(); render(); toast("Requisicion y criterios guardados.");
     }
 
+    const publicationChannels = ["Portal corporativo", "LinkedIn", "Laborum", "Computrabajo", "Indeed", "Redes sociales", "Referidos internos", "OMIL / bolsa local", "Institucion educativa", "Carga manual"];
+    function publicationsForActive(){ return data.publications.filter(p => p.process === data.activeProcess); }
+    function hasActivePublication(){ return publicationsForActive().length > 0; }
+    function defaultPostingText(){
+      const p = getProcess();
+      return `Cargo: ${p.title}\n\nObjetivo del cargo:\n${p.description || "Describe el objetivo del cargo y el contexto de la vacante."}\n\nFunciones principales:\n${p.functions || "Indica las funciones principales."}\n\nRequisitos excluyentes:\n${p.must.map(x => "- " + x).join("\n") || "- Completar requisitos excluyentes."}\n\nRequisitos deseables:\n${p.nice.map(x => "- " + x).join("\n") || "- Completar requisitos deseables."}\n\nCondiciones:\nModalidad, ubicacion, jornada y renta referencial segun requisicion aprobada.`;
+    }
+    function renderPosting(){
+      const p = getProcess();
+      const items = publicationsForActive();
+      const selected = new Set(p.sources || []);
+      document.getElementById("posting").innerHTML = `
+        ${processToolbar("La publicacion define donde se difundira la oferta antes de recibir postulaciones.")}
+        <div class="grid two">
+          <div class="card pad">
+            <h2>Publicar oferta simulada</h2>
+            <div class="form">
+              <label><span>Titulo visible del aviso</span><input id="postTitle" value="${escapeHtml(p.title)}" placeholder="Ej.: Asistente de Atencion y Gestion Administrativa"></label>
+              <label><span>Responsable de publicacion</span><input id="postOwner" value="${escapeHtml(p.responsible || "Equipo de seleccion")}" placeholder="Nombre o rol responsable"></label>
+              <label><span>Fecha de cierre</span><input id="postClose" type="date"></label>
+              <label style="grid-column:1/-1"><span>Portales y fuentes</span><div class="card pad" style="box-shadow:none">${publicationChannels.map(ch=>`<label style="display:flex;gap:8px;align-items:center;margin:6px 0"><input type="checkbox" class="postChannel" value="${escapeHtml(ch)}" ${selected.has(ch) ? "checked" : ""} style="width:auto;min-height:auto"> ${escapeHtml(ch)}</label>`).join("")}</div></label>
+              <label style="grid-column:1/-1"><span>Texto del aviso</span><textarea id="postBody" style="min-height:260px">${escapeHtml(defaultPostingText())}</textarea></label>
+              <label style="grid-column:1/-1"><span>Notas de segmentacion o resguardos</span><textarea id="postNotes" placeholder="Ej.: Evitar lenguaje excluyente, publicar en fuentes amplias, reforzar requisitos excluyentes."></textarea></label>
+              <button class="btn primary" onclick="savePublication()">Registrar publicacion</button>
+            </div>
+          </div>
+          <div class="card pad">
+            <h2>Publicaciones registradas</h2>
+            <div class="timeline">${items.length ? items.map(pub=>`<div class="event"><b>${escapeHtml(pub.title)}</b><span>${escapeHtml(pub.portals.join(", "))} · cierre ${escapeHtml(pub.closingDate)} · ${escapeHtml(pub.at)}</span><p>${escapeHtml(pub.body).slice(0,190)}...</p></div>`).join("") : `<p class="small">Aun no hay publicaciones registradas para este proceso.</p>`}</div>
+          </div>
+        </div>`;
+    }
+    function savePublication(){
+      if (!data.requisitions.length) return toast("Primero crea una requisicion aprobada.");
+      const portals = [...document.querySelectorAll(".postChannel:checked")].map(x => x.value);
+      const title = val("postTitle").trim(), owner = val("postOwner").trim(), closingDate = val("postClose"), body = val("postBody").trim(), notes = val("postNotes").trim();
+      if (!title || !owner || !closingDate) return toast("Completa titulo, responsable y fecha de cierre.");
+      if (!portals.length) return toast("Selecciona al menos un portal o fuente de difusion.");
+      if (body.length < 180) return toast("Redacta un aviso mas completo antes de publicarlo.");
+      const p = getProcess();
+      p.sources = portals;
+      data.publications.unshift({ id:`pub${Date.now()}`, process:data.activeProcess, title, owner, portals, closingDate, body, notes, at:new Date().toLocaleString("es-CL") });
+      completeTask("t3p");
+      data.audit.unshift(log(`Oferta publicada para ${p.title} en ${portals.join(", ")}`, role()));
+      save(); render(); toast("Tarea completada: oferta publicada.");
+    }
+
     function renderProcesses(){
       const p = getProcess();
+      const published = publicationsForActive()[0];
       document.getElementById("processes").innerHTML = `
         ${processToolbar("El pipeline muestra solo candidatos asociados a este proceso.")}
         <div class="toolbar filters" style="margin-bottom:14px"><button class="btn primary" onclick="generateDemoCandidates()">Generar postulantes ficticios</button></div>
@@ -562,8 +616,9 @@
           </div>
           <div class="card pad">
             <h2>Publicacion simulada</h2>
-            <p>${p.sources.map(s=>pill(s,"gray")).join(" ")}</p>
-            <div class="actions"><button class="btn primary" onclick="openPortal()">Simular postulacion</button><button class="btn" onclick="openVacancy()">Ver oferta</button></div>
+            <p>${(p.sources || []).map(s=>pill(s,"gray")).join(" ")}</p>
+            ${published ? `<div class="hint">Oferta publicada: cierre ${escapeHtml(published.closingDate)} · responsable ${escapeHtml(published.owner)}</div>` : `<div class="hint warning">Antes de recibir postulaciones, registra la publicacion de la oferta y sus canales.</div>`}
+            <div class="actions"><button class="btn" onclick="setView('posting')">Gestionar publicacion</button><button class="btn primary" onclick="openPortal()">Simular postulacion</button><button class="btn" onclick="openVacancy()">Ver oferta</button></div>
           </div>
         </div>
         <div class="kanban" id="kanban">${stages.map(stage => lane(stage)).join("")}</div>`;
@@ -607,6 +662,7 @@
       const p = getProcess();
       if (!data.requisitions.length) return toast("Primero crea una requisicion.");
       if (!p.must.length || !p.nice.length || !p.competencies.length) return toast("Primero completa los criterios del proceso activo.");
+      if (!hasActivePublication()) return toast("Primero registra la publicacion de la oferta.");
       if (data.candidates.some(c => c.process === data.activeProcess)) return toast("Este proceso ya tiene candidatos. Si quieres otros, ingresa postulaciones manuales.");
       const samples = [
         {name:"Camila Rojas",source:"Portal corporativo",stage:"Nuevo",score:92,exp:4,city:"Valparaiso",salary:820000,tags:["prioritario","reclamos","CRM"],risks:[],summary:"Experiencia en atencion presencial, gestion de reclamos y uso de CRM en servicios.",presencial:"Si",reclamos:"Gestiona reclamos con seguimiento y cierre informado.",sistema:"CRM Salesforce",caso:"Contuvo a usuario molesto, registro caso y coordino solucion.",matrix:{presencial:1,expMin:1,atencion:3,reclamos:2,crm:2,excel:1,claridad:2,renta:2},decision:"Revisar",reason:"Buen calce inicial; validar evidencia en entrevista."},
@@ -893,6 +949,7 @@ Coordinar entrevistas finales con jefatura, completar pauta de evaluacion y regi
     function openVacancy(){ const p = getProcess(); openModal("Oferta simulada", `<div class="card pad"><h2>${p.title}</h2><p>${p.description}</p>${listBlock("Requisitos excluyentes",p.must,"red")}${listBlock("Deseables",p.nice,"amber")}<button class="btn primary" onclick="openPortal()">Postular</button></div>`); }
     function openPortal(){
       if (!data.requisitions.length) { toast("Primero crea una requisicion para asociar postulaciones al proceso."); return; }
+      if (!hasActivePublication()) { toast("Primero publica la oferta en el modulo Publicacion."); return; }
       const p = getProcess();
       openModal("Portal candidato", `<div class="grid two">
         <div class="card pad"><h2>${p.title}</h2><p>${p.description}</p><div class="hint">Formulario simulado para crear una postulacion asociada al proceso activo.</div></div>
